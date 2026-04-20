@@ -163,50 +163,50 @@
 }
 
 [data-theme='neon'] {
-  /* Midnight Gold Luxury Theme */
-  --color-neutral-50: #0a0a0c;
-  --color-neutral-100: #121215;
-  --color-neutral-200: #1c1c20;
-  --color-neutral-300: #29292e;
-  --color-neutral-400: #3c3c43;
-  --color-neutral-500: #56565e;
-  --color-neutral-600: #8c8c94;
-  --color-neutral-700: #bebec4;
-  --color-neutral-800: #e0e0e4;
-  --color-neutral-900: #f2f2f4;
+  /* Obsidian Aura (Ultra-Premium / Linear-Inspired) */
+  --color-neutral-50: #050506;   /* OLED Black Background */
+  --color-neutral-100: #0e0f11;  /* Main Surface */
+  --color-neutral-200: #151619;  /* Elevated Surface */
+  --color-neutral-300: #202227;  /* High Surface / Borders */
+  --color-neutral-400: #2d3038;  /* Hover / Accents */
+  --color-neutral-500: #424652;
+  --color-neutral-600: #71768a;  /* Secondary Text */
+  --color-neutral-700: #a1a6b8;  /* Muted Text */
+  --color-neutral-800: #c9ccd6;
+  --color-neutral-900: #ebecf0;  /* Primary Text */
   --color-neutral-950: #ffffff;
-  --color-white: #121215;
+  --color-white: #0e0f11;        /* Cards match main surface */
 
-  /* Primary: Liquid Gold / Bronze */
-  --color-primary-50: #2b220d;
-  --color-primary-100: #473712;
-  --color-primary-200: #654f15;
-  --color-primary-300: #886a1a;
-  --color-primary-400: #af8920;
-  --color-primary-500: #d4a72c; /* Main Gold */
-  --color-primary-600: #dea935;
-  --color-primary-700: #e7bf53;
-  --color-primary-800: #eed07b;
-  --color-primary-900: #f5e4ab;
+  /* Primary: Electric Indigo / Iris */
+  --color-primary-50: #0f101a;
+  --color-primary-100: #191a2e;
+  --color-primary-200: #24274d;
+  --color-primary-300: #3c4180;
+  --color-primary-400: #545bb8;
+  --color-primary-500: #5e6ad2;  /* Main Indigo */
+  --color-primary-600: #6b77e8;
+  --color-primary-700: #8c96f2;
+  --color-primary-800: #b5bbfa;
+  --color-primary-900: #eaecff;
 
-  /* Accent: Platinum / Iced Silver */
-  --color-accent-50: #18191b;
-  --color-accent-100: #292c2f;
-  --color-accent-200: #3c4046;
-  --color-accent-300: #545963;
-  --color-accent-400: #747b88;
-  --color-accent-500: #98a1b0;
-  --color-accent-600: #b0b7c4;
-  --color-accent-700: #c5cbd5;
-  --color-accent-800: #dcdfe6;
-  --color-accent-900: #f1f2f5;
+  /* Accent: Electric Violet / Cyan hints */
+  --color-accent-50: #0f0a14;
+  --color-accent-100: #1e112b;
+  --color-accent-200: #3b1e57;
+  --color-accent-300: #5f2a8f;
+  --color-accent-400: #8b3dc8;
+  --color-accent-500: #a855f7;  /* Violet */
+  --color-accent-600: #bd73f9;
+  --color-accent-700: #d396fa;
+  --color-accent-800: #e8bffc;
+  --color-accent-900: #fae8ff;
 
-  /* Soft golden glows for elevation */
-  --shadow-xs: 0 0 5px rgba(212, 167, 44, 0.1);
-  --shadow-sm: 0 0 10px rgba(212, 167, 44, 0.15);
-  --shadow-md: 0 0 15px rgba(212, 167, 44, 0.2);
-  --shadow-lg: 0 0 25px rgba(212, 167, 44, 0.3);
-  --shadow-xl: 0 0 35px rgba(212, 167, 44, 0.4);
+  /* Ultra-smooth subtle glowing shadows */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --shadow-sm: 0 4px 6px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-lg: 0 16px 32px rgba(0, 0, 0, 0.5), 0 0 40px rgba(94, 106, 210, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 60px rgba(94, 106, 210, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 /* ─── RESET ─── */
