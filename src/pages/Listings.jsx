@@ -1,10 +1,21 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import ListingCard from '../components/ListingCard';
 import SearchBar from '../components/SearchBar';
 import { listings as staticListings, categories, amenities } from '../data/listings';
 import { useApp } from '../context/AppContext';
 import './Listings.css';
+
+// Fix leaflet default marker icon issue in react
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+});
 
 export default function Listings() {
   const [searchParams] = useSearchParams();
@@ -116,11 +127,11 @@ export default function Listings() {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
               </button>
               <button
-                className={`listings-toolbar__view-btn ${viewMode === 'list' ? 'active' : ''}`}
-                onClick={() => setViewMode('list')}
-                aria-label="List view"
+                className={`listings-toolbar__view-btn ${viewMode === 'map' ? 'active' : ''}`}
+                onClick={() => setViewMode('map')}
+                aria-label="Map view"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="4" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="16" width="18" height="4" rx="1"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
               </button>
             </div>
           </div>
@@ -196,11 +207,36 @@ export default function Listings() {
 
         {/* RESULTS */}
         {filtered.length > 0 ? (
-          <div className={`listing-grid ${viewMode === 'list' ? 'listing-grid--list' : ''} stagger`}>
-            {filtered.map((listing, i) => (
-              <ListingCard key={listing.id} listing={listing} index={i} />
-            ))}
-          </div>
+          viewMode === 'map' ? (
+            <div className="listings-map-container animate-fade-in" style={{ height: '70vh', width: '100%', borderRadius: 'var(--radius-xl)', overflow: 'hidden', zIndex: 1, position: 'relative' }}>
+              <MapContainer center={[39.8283, -98.5795]} zoom={3} style={{ height: '100%', width: '100%' }}>
+                <TileLayer
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                />
+                {filtered.map((listing) => (
+                  <Marker key={listing.id} position={[listing.lat, listing.lng]}>
+                    <Popup className="custom-popup">
+                      <div className="map-popup-card">
+                        <img src={listing.images[0]} alt={listing.title} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '8px 8px 0 0' }} />
+                        <div style={{ padding: '8px' }}>
+                          <h4 style={{ margin: '0 0 4px', fontSize: '14px' }}>{listing.title}</h4>
+                          <p style={{ margin: '0 0 8px', fontWeight: 'bold' }}>${listing.price} / night</p>
+                          <a href={`/listing/${listing.id}`} className="btn btn--primary btn--sm" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>View Property</a>
+                        </div>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+          ) : (
+            <div className="listing-grid stagger">
+              {filtered.map((listing, i) => (
+                <ListingCard key={listing.id} listing={listing} index={i} />
+              ))}
+            </div>
+          )
         ) : (
           <div className="listings-empty animate-fade-in">
             <div className="listings-empty__icon">🏠</div>
