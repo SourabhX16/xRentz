@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 import { useApp } from '../context/AppContext';
 import { categories, amenities } from '../data/listings';
 import './OwnerDashboard.css';
@@ -24,7 +26,18 @@ const emptyForm = {
   description: '',
   selectedAmenities: [],
   images: [],
+  lat: 20.5937, // Default center (India)
+  lng: 78.9629,
 };
+
+function LocationPicker({ lat, lng, onChange }) {
+  useMapEvents({
+    click(e) {
+      onChange(e.latlng.lat, e.latlng.lng);
+    },
+  });
+  return <Marker position={[lat, lng]} />;
+}
 
 export default function OwnerDashboard() {
   const { user, ownerListings, addOwnerListing, removeOwnerListing, logout, addToast } = useApp();
@@ -116,8 +129,8 @@ export default function OwnerDashboard() {
       description: form.description,
       amenities: form.selectedAmenities,
       images: form.images.length > 0 ? form.images : randomImages,
-      lat: 40 + Math.random() * 10,
-      lng: -120 + Math.random() * 40,
+      lat: form.lat,
+      lng: form.lng,
     });
 
     setForm({ ...emptyForm });
@@ -244,8 +257,8 @@ export default function OwnerDashboard() {
                     </div>
 
                     {/* Location */}
-                    <div className="form-group">
-                      <label className="form-label" htmlFor="prop-location">Location *</label>
+                    <div className="form-group owner-form__full">
+                      <label className="form-label" htmlFor="prop-location">Location String *</label>
                       <input
                         id="prop-location"
                         type="text"
@@ -255,6 +268,25 @@ export default function OwnerDashboard() {
                         placeholder="e.g. Mumbai, India"
                       />
                       {formErrors.location && <p className="form-error">{formErrors.location}</p>}
+                    </div>
+
+                    {/* Map Picker */}
+                    <div className="form-group owner-form__full">
+                      <label className="form-label">Pinpoint Location on Map *</label>
+                      <div style={{ height: '300px', width: '100%', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--color-neutral-200)', zIndex: 1, position: 'relative' }}>
+                        <MapContainer center={[form.lat, form.lng]} zoom={4} style={{ height: '100%', width: '100%' }}>
+                          <TileLayer url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png" />
+                          <LocationPicker 
+                            lat={form.lat} 
+                            lng={form.lng} 
+                            onChange={(lat, lng) => { 
+                              updateField('lat', lat); 
+                              updateField('lng', lng); 
+                            }} 
+                          />
+                        </MapContainer>
+                      </div>
+                      <p className="form-hint">Click anywhere on the map to set your property's exact coordinates.</p>
                     </div>
 
                     {/* Price */}
