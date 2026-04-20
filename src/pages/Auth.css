@@ -13,6 +13,11 @@
   justify-content: space-between;
   position: relative;
   overflow: hidden;
+  transition: background 0.5s ease;
+}
+
+.auth-page__left--owner {
+  background: linear-gradient(135deg, #0f766e 0%, #064e3b 100%);
 }
 
 .auth-page__left::before {
@@ -120,17 +125,66 @@
 
 .auth-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 480px;
   background: var(--color-white);
   border-radius: var(--radius-2xl);
-  padding: var(--space-10);
+  padding: var(--space-8);
   box-shadow: var(--shadow-xl);
   border: 1px solid var(--color-neutral-200);
 }
 
+/* ─── ROLE SELECTOR ─── */
+.auth-role-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+}
+
+.auth-role-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-3);
+  border: 2px solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  background: var(--color-neutral-50);
+  cursor: pointer;
+  transition: all var(--duration-normal);
+  font-family: var(--font-body);
+  text-align: center;
+}
+
+.auth-role-card:hover {
+  border-color: var(--color-primary-300);
+  background: var(--color-primary-50, #f0f4ff);
+}
+
+.auth-role-card--active {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-50, #f0f4ff);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.auth-role-card__icon {
+  font-size: 1.8rem;
+}
+
+.auth-role-card__label {
+  font-weight: var(--fw-semi);
+  font-size: var(--text-body-sm);
+  color: var(--color-neutral-800);
+}
+
+.auth-role-card__desc {
+  font-size: var(--text-caption);
+  color: var(--color-neutral-500);
+}
+
 .auth-card__header {
   text-align: center;
-  margin-bottom: var(--space-8);
+  margin-bottom: var(--space-6);
 }
 
 .auth-card__title {
@@ -263,5 +317,11 @@
   .auth-card {
     padding: var(--space-6);
     box-shadow: var(--shadow-md);
+  }
+  .auth-role-selector {
+    gap: var(--space-2);
+  }
+  .auth-role-card {
+    padding: var(--space-3) var(--space-2);
   }
 }

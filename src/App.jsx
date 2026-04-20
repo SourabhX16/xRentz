@@ -8,6 +8,7 @@ import ListingDetail from './pages/ListingDetail';
 import Booking from './pages/Booking';
 import Auth from './pages/Auth';
 import Dashboard from './pages/Dashboard';
+import OwnerDashboard from './pages/OwnerDashboard';
 import './App.css';
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="/booking/:id" element={<Booking />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/owner-dashboard" element={<OwnerDashboard />} />
         </Routes>
       </main>
       <Footer />

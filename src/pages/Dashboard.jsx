@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { listings } from '../data/listings';
+import { listings as staticListings } from '../data/listings';
 import './Dashboard.css';
 
 export default function Dashboard() {
-  const { user, bookings, favorites, logout, addToast } = useApp();
+  const { user, bookings, favorites, logout, addToast, ownerListings } = useApp();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('bookings');
+  const allListings = [...staticListings, ...ownerListings];
 
   if (!user) {
     return (
@@ -20,7 +21,18 @@ export default function Dashboard() {
     );
   }
 
-  const favoriteListings = listings.filter(l => favorites.includes(l.id));
+  if (user?.role === 'owner') {
+    return (
+      <div className="dashboard-empty container animate-fade-in">
+        <div className="dashboard-empty__icon">🏠</div>
+        <h2>You're logged in as a Host</h2>
+        <p>Head to your Owner Dashboard to manage your properties.</p>
+        <Link to="/owner-dashboard" className="btn btn--primary btn--lg">Go to Owner Dashboard</Link>
+      </div>
+    );
+  }
+
+  const favoriteListings = allListings.filter(l => favorites.includes(l.id));
 
   const tabs = [
     { id: 'bookings', label: '📋 Bookings', count: bookings.length },

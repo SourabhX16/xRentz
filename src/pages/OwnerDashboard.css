@@ -1,0 +1,340 @@
+/* ─── OWNER DASHBOARD EXTRAS ─── */
+
+.owner-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
+  color: #fff;
+  font-size: var(--text-caption);
+  font-weight: var(--fw-semi);
+  letter-spacing: 0.03em;
+}
+
+/* ── Add Property Form ── */
+.owner-add-form {
+  background: var(--color-white);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-lg);
+}
+
+.owner-add-form__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-100);
+}
+
+.owner-add-form__header h2 {
+  font-size: var(--text-h3);
+  font-weight: var(--fw-extra);
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-400));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.owner-form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.owner-form__full {
+  grid-column: 1 / -1;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+  font-family: var(--font-body);
+  line-height: var(--lh-body);
+}
+
+.form-hint {
+  font-size: var(--text-caption);
+  color: var(--color-neutral-400);
+  margin-top: var(--space-1);
+}
+
+.owner-amenities-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.owner-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-neutral-100);
+}
+
+/* ── Properties List ── */
+.owner-properties__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.owner-properties__heading {
+  font-size: var(--text-h4);
+  font-weight: var(--fw-bold);
+}
+
+.owner-properties__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.owner-prop-card {
+  display: grid;
+  grid-template-columns: 200px 1fr 200px;
+  background: var(--color-white);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: all var(--duration-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.owner-prop-card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary-200);
+  transform: translateY(-2px);
+}
+
+.owner-prop-card__image {
+  width: 100%;
+  height: 100%;
+  min-height: 160px;
+  object-fit: cover;
+}
+
+.owner-prop-card__body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.owner-prop-card__title {
+  font-size: var(--text-body-lg);
+  font-weight: var(--fw-semi);
+  margin-bottom: var(--space-1);
+}
+
+.owner-prop-card__location {
+  font-size: var(--text-body-sm);
+  color: var(--color-neutral-500);
+  margin-bottom: var(--space-2);
+}
+
+.owner-prop-card__meta {
+  display: flex;
+  gap: var(--space-2);
+  font-size: var(--text-body-sm);
+  color: var(--color-neutral-600);
+}
+
+.owner-prop-card__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.owner-prop-card__stats {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border-left: 1px solid var(--color-neutral-100);
+  background: var(--color-neutral-50);
+}
+
+.owner-prop-card__stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.owner-prop-card__stat-val {
+  font-weight: var(--fw-semi);
+  font-size: var(--text-body-sm);
+}
+
+.owner-prop-card__stat-label {
+  font-size: var(--text-caption);
+  color: var(--color-neutral-400);
+}
+
+/* ── Danger Button ── */
+.btn--danger {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+}
+
+.btn--danger:hover {
+  background: #dc2626;
+}
+
+/* ── Earnings ── */
+.owner-earnings__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.earnings-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-white);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.earnings-card--primary {
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-800));
+  border: none;
+  color: #fff;
+}
+
+.earnings-card--primary .earnings-card__label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.earnings-card__icon {
+  font-size: 2rem;
+}
+
+.earnings-card__label {
+  font-size: var(--text-caption);
+  color: var(--color-neutral-500);
+  margin-bottom: var(--space-1);
+}
+
+.earnings-card__value {
+  font-size: var(--text-h4);
+  font-weight: var(--fw-extra);
+}
+
+/* ── Chart Placeholder ── */
+.earnings-chart-placeholder {
+  background: var(--color-white);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.earnings-chart-placeholder h3 {
+  font-size: var(--text-body-lg);
+  font-weight: var(--fw-semi);
+  margin-bottom: var(--space-6);
+}
+
+.earnings-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 180px;
+  gap: var(--space-4);
+}
+
+.earnings-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.earnings-bar {
+  width: 100%;
+  max-width: 48px;
+  background: linear-gradient(180deg, var(--color-primary-400), var(--color-primary-600));
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.earnings-bar-label {
+  font-size: var(--text-caption);
+  color: var(--color-neutral-500);
+  font-weight: var(--fw-medium);
+}
+
+/* ── Guest Avatar in Bookings ── */
+.booking-item__guest-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .owner-form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-prop-card {
+    grid-template-columns: 1fr;
+  }
+
+  .owner-prop-card__image {
+    height: 180px;
+  }
+
+  .owner-prop-card__stats {
+    flex-direction: row;
+    border-left: none;
+    border-top: 1px solid var(--color-neutral-100);
+    justify-content: space-around;
+  }
+
+  .owner-properties__toolbar {
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: stretch;
+  }
+
+  .owner-earnings__cards {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .owner-form__actions {
+    flex-direction: column;
+  }
+
+  .owner-form__actions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .owner-earnings__cards {
+    grid-template-columns: 1fr;
+  }
+}

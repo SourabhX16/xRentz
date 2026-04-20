@@ -136,6 +136,75 @@
   --navbar-height: 72px;
 }
 
+/* ─── THEMES ─── */
+[data-theme='dark'] {
+  --color-neutral-50: #0C111D;
+  --color-neutral-100: #101828;
+  --color-neutral-200: #1D2939;
+  --color-neutral-300: #344054;
+  --color-neutral-400: #475467;
+  --color-neutral-500: #667085;
+  --color-neutral-600: #98A2B3;
+  --color-neutral-700: #D0D5DD;
+  --color-neutral-800: #EAECF0;
+  --color-neutral-900: #F9FAFB;
+  --color-neutral-950: #FFFFFF;
+  --color-white: #101828;
+
+  --color-primary-50: #001941;
+  --color-primary-100: #002D72;
+  --color-primary-200: #0042A3;
+  --color-primary-800: #C5DCFF;
+  --color-primary-900: #E8F1FF;
+
+  --shadow-xs: 0px 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0px 1px 3px rgba(0, 0, 0, 0.5), 0px 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0px 4px 8px -2px rgba(0, 0, 0, 0.5), 0px 2px 4px -2px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='neon'] {
+  --color-neutral-50: #05051a;
+  --color-neutral-100: #0a0a2a;
+  --color-neutral-200: #14143a;
+  --color-neutral-300: #2a2a5a;
+  --color-neutral-400: #4a4a8a;
+  --color-neutral-500: #6a6a9a;
+  --color-neutral-600: #a0a0c0;
+  --color-neutral-700: #c0c0e0;
+  --color-neutral-800: #e0e0ff;
+  --color-neutral-900: #f0f0ff;
+  --color-neutral-950: #ffffff;
+  --color-white: #0a0a2a;
+
+  --color-primary-50: #1a0a3a;
+  --color-primary-100: #2a1a5a;
+  --color-primary-200: #5a2a8a;
+  --color-primary-300: #8a3aca;
+  --color-primary-400: #bc13fe;
+  --color-primary-500: #d946ef;
+  --color-primary-600: #e879f9;
+  --color-primary-700: #f0abfc;
+  --color-primary-800: #f5d0fe;
+  --color-primary-900: #fae8ff;
+
+  --color-accent-50: #002222;
+  --color-accent-100: #003333;
+  --color-accent-200: #006666;
+  --color-accent-300: #009999;
+  --color-accent-400: #06b6d4;
+  --color-accent-500: #0ea5e9;
+  --color-accent-600: #38bdf8;
+  --color-accent-700: #7dd3fc;
+  --color-accent-800: #bae6fd;
+  --color-accent-900: #e0f2fe;
+
+  --shadow-xs: 0 0 5px rgba(217, 70, 239, 0.2);
+  --shadow-sm: 0 0 10px rgba(217, 70, 239, 0.3);
+  --shadow-md: 0 0 15px rgba(217, 70, 239, 0.4);
+  --shadow-lg: 0 0 25px rgba(217, 70, 239, 0.5);
+  --shadow-xl: 0 0 35px rgba(217, 70, 239, 0.6);
+}
+
 /* ─── RESET ─── */
 *, *::before, *::after {
   margin: 0;

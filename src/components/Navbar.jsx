@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import './Navbar.css';
 
 export default function Navbar() {
-  const { user, logout } = useApp();
+  const { user, logout, theme, setTheme } = useApp();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -23,6 +23,14 @@ export default function Navbar() {
   }, [location]);
 
   const isHome = location.pathname === '/';
+  const isOwner = user?.role === 'owner';
+  const dashboardPath = isOwner ? '/owner-dashboard' : '/dashboard';
+
+  const toggleTheme = () => {
+    const themes = ['light', 'dark', 'neon'];
+    const nextTheme = themes[(themes.indexOf(theme) + 1) % themes.length];
+    setTheme(nextTheme);
+  };
 
   return (
     <nav className={`navbar ${scrolled ? 'navbar--scrolled' : ''} ${isHome && !scrolled ? 'navbar--transparent' : ''}`} role="navigation" aria-label="Main navigation">
@@ -41,11 +49,19 @@ export default function Navbar() {
           <Link to="/" className={`navbar__link ${location.pathname === '/' ? 'navbar__link--active' : ''}`}>Explore</Link>
           <Link to="/listings" className={`navbar__link ${location.pathname === '/listings' ? 'navbar__link--active' : ''}`}>Listings</Link>
           {user && (
-            <Link to="/dashboard" className={`navbar__link ${location.pathname === '/dashboard' ? 'navbar__link--active' : ''}`}>Dashboard</Link>
+            <Link to={dashboardPath} className={`navbar__link ${location.pathname === dashboardPath ? 'navbar__link--active' : ''}`}>
+              {isOwner ? 'My Properties' : 'Dashboard'}
+            </Link>
           )}
         </div>
 
         <div className="navbar__right">
+          <button className="navbar__theme-btn" onClick={toggleTheme} aria-label={`Switch theme (current: ${theme})`}>
+            {theme === 'light' && '☀️'}
+            {theme === 'dark' && '🌙'}
+            {theme === 'neon' && '⚡'}
+          </button>
+
           {user ? (
             <div className="navbar__profile-wrap">
               <button
@@ -57,19 +73,26 @@ export default function Navbar() {
               >
                 <div className="navbar__avatar">{user.avatar || '👤'}</div>
                 <span className="navbar__user-name">{user.name?.split(' ')[0]}</span>
+                {isOwner && <span className="navbar__role-badge">Host</span>}
                 <svg className={`navbar__chevron ${profileOpen ? 'navbar__chevron--open' : ''}`} width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
               {profileOpen && (
                 <div className="navbar__dropdown animate-scale-in" role="menu">
-                  <Link to="/dashboard" className="navbar__dropdown-item" role="menuitem">
-                    📊 Dashboard
+                  <Link to={dashboardPath} className="navbar__dropdown-item" role="menuitem">
+                    {isOwner ? '🏠 My Properties' : '📊 Dashboard'}
                   </Link>
-                  <Link to="/dashboard" className="navbar__dropdown-item" role="menuitem">
-                    💬 Messages
-                  </Link>
-                  <Link to="/dashboard" className="navbar__dropdown-item" role="menuitem">
+                  {isOwner ? (
+                    <Link to="/owner-dashboard" className="navbar__dropdown-item" role="menuitem">
+                      💰 Earnings
+                    </Link>
+                  ) : (
+                    <Link to="/dashboard" className="navbar__dropdown-item" role="menuitem">
+                      💬 Messages
+                    </Link>
+                  )}
+                  <Link to={dashboardPath} className="navbar__dropdown-item" role="menuitem">
                     ❤️ Favorites
                   </Link>
                   <hr className="navbar__dropdown-divider" />
@@ -106,7 +129,9 @@ export default function Navbar() {
         <Link to="/listings" className="navbar__mobile-link" role="menuitem">Listings</Link>
         {user ? (
           <>
-            <Link to="/dashboard" className="navbar__mobile-link" role="menuitem">Dashboard</Link>
+            <Link to={dashboardPath} className="navbar__mobile-link" role="menuitem">
+              {isOwner ? '🏠 My Properties' : 'Dashboard'}
+            </Link>
             <button className="navbar__mobile-link navbar__mobile-link--danger" onClick={logout} role="menuitem">Log Out</button>
           </>
         ) : (

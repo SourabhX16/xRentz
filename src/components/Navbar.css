@@ -118,6 +118,31 @@
   gap: var(--space-2);
 }
 
+.navbar__theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-200);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-spring);
+}
+
+.navbar__theme-btn:hover {
+  background: var(--color-neutral-200);
+  transform: scale(1.05);
+}
+
+.navbar--transparent .navbar__theme-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
 /* ─── BUTTONS (GLOBAL) ─── */
 .btn {
   display: inline-flex;
@@ -253,6 +278,17 @@
   font-size: var(--text-body-sm);
   font-weight: var(--fw-medium);
   color: var(--color-neutral-700);
+}
+
+.navbar__role-badge {
+  font-size: 10px;
+  font-weight: var(--fw-semi);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #0f766e, #10b981);
+  color: #fff;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
 }
 
 .navbar__chevron {

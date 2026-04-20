@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { listings, reviews as allReviews } from '../data/listings';
+import { listings as staticListings, reviews as allReviews } from '../data/listings';
 import { useApp } from '../context/AppContext';
 import './ListingDetail.css';
 
 export default function ListingDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, favorites, toggleFavorite, addToast } = useApp();
-  const listing = listings.find(l => l.id === parseInt(id));
+  const { user, favorites, toggleFavorite, addToast, ownerListings } = useApp();
+  const allListings = [...staticListings, ...ownerListings];
+  const listing = allListings.find(l => l.id === parseInt(id)) || allListings.find(l => l.id === Number(id));
   const [activeImg, setActiveImg] = useState(0);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');

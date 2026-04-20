@@ -7,13 +7,16 @@ export default function Auth() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login, user } = useApp();
+  const [role, setRole] = useState(searchParams.get('role') === 'owner' ? 'owner' : 'user');
   const [isSignup, setIsSignup] = useState(searchParams.get('mode') === 'signup');
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user) navigate('/dashboard');
+    if (user) {
+      navigate(user.role === 'owner' ? '/owner-dashboard' : '/dashboard');
+    }
   }, [user, navigate]);
 
   const updateField = (field, value) => {
@@ -41,24 +44,30 @@ export default function Auth() {
     login({
       name: isSignup ? formData.name : formData.email.split('@')[0],
       email: formData.email,
-      avatar: '😊',
+      avatar: role === 'owner' ? '🏠' : '😊',
+      role: role,
     });
     setLoading(false);
-    navigate('/dashboard');
+    navigate(role === 'owner' ? '/owner-dashboard' : '/dashboard');
   };
 
   const handleSocial = (provider) => {
     setLoading(true);
     setTimeout(() => {
-      login({ name: `${provider} User`, email: `user@${provider.toLowerCase()}.com`, avatar: '👤' });
+      login({
+        name: `${provider} User`,
+        email: `user@${provider.toLowerCase()}.com`,
+        avatar: role === 'owner' ? '🏠' : '👤',
+        role: role,
+      });
       setLoading(false);
-      navigate('/dashboard');
+      navigate(role === 'owner' ? '/owner-dashboard' : '/dashboard');
     }, 800);
   };
 
   return (
     <div className="auth-page">
-      <div className="auth-page__left">
+      <div className={`auth-page__left ${role === 'owner' ? 'auth-page__left--owner' : ''}`}>
         <div className="auth-page__brand">
           <Link to="/" className="auth-page__logo">
             <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
@@ -69,31 +78,79 @@ export default function Auth() {
           </Link>
         </div>
         <div className="auth-page__hero-text">
-          <h1>Find your perfect<br/>place to stay</h1>
-          <p>Join thousands of happy renters and hosts on the most trusted rental marketplace.</p>
+          {role === 'user' ? (
+            <>
+              <h1>Find your perfect<br/>place to stay</h1>
+              <p>Join thousands of happy renters on the most trusted rental marketplace.</p>
+            </>
+          ) : (
+            <>
+              <h1>Start earning<br/>from your property</h1>
+              <p>List your property and connect with thousands of renters looking for their next stay.</p>
+            </>
+          )}
         </div>
         <div className="auth-page__testimonial">
-          <p>"xRentz made finding our dream vacation home incredibly easy. The booking was seamless and the host was amazing!"</p>
-          <div className="auth-page__testimonial-author">
-            <span>😊</span>
-            <div>
-              <strong>Sarah K.</strong>
-              <span>Guest since 2023</span>
-            </div>
-          </div>
+          {role === 'user' ? (
+            <>
+              <p>"xRentz made finding our dream vacation home incredibly easy. The booking was seamless and the host was amazing!"</p>
+              <div className="auth-page__testimonial-author">
+                <span>😊</span>
+                <div>
+                  <strong>Sarah K.</strong>
+                  <span>Guest since 2023</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <p>"I listed my apartment and got my first booking within 48 hours! xRentz makes hosting effortless and profitable."</p>
+              <div className="auth-page__testimonial-author">
+                <span>🏠</span>
+                <div>
+                  <strong>Rajesh M.</strong>
+                  <span>Host since 2024</span>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       <div className="auth-page__right">
         <div className="auth-card animate-scale-in">
+          {/* Role Selector */}
+          <div className="auth-role-selector">
+            <button
+              className={`auth-role-card ${role === 'user' ? 'auth-role-card--active' : ''}`}
+              onClick={() => setRole('user')}
+              type="button"
+            >
+              <span className="auth-role-card__icon">🔑</span>
+              <span className="auth-role-card__label">I want to rent</span>
+              <span className="auth-role-card__desc">Find & book properties</span>
+            </button>
+            <button
+              className={`auth-role-card ${role === 'owner' ? 'auth-role-card--active' : ''}`}
+              onClick={() => setRole('owner')}
+              type="button"
+            >
+              <span className="auth-role-card__icon">🏠</span>
+              <span className="auth-role-card__label">I want to list</span>
+              <span className="auth-role-card__desc">List & manage properties</span>
+            </button>
+          </div>
+
           <div className="auth-card__header">
             <h2 className="auth-card__title">
-              {isSignup ? 'Create your account' : 'Welcome back'}
+              {isSignup
+                ? (role === 'owner' ? 'Create Host Account' : 'Create your account')
+                : (role === 'owner' ? 'Host Sign In' : 'Welcome back')}
             </h2>
             <p className="auth-card__subtitle">
               {isSignup
-                ? 'Start your journey with xRentz'
-                : 'Sign in to continue to xRentz'}
+                ? (role === 'owner' ? 'Start hosting with xRentz' : 'Start your journey with xRentz')
+                : (role === 'owner' ? 'Sign in to manage your properties' : 'Sign in to continue to xRentz')}
             </p>
           </div>
 
@@ -124,7 +181,7 @@ export default function Auth() {
                   className={`form-input ${errors.name ? 'form-input--error' : ''}`}
                   value={formData.name}
                   onChange={e => updateField('name', e.target.value)}
-                  placeholder="John Doe"
+                  placeholder={role === 'owner' ? 'Property Owner Name' : 'John Doe'}
                   autoComplete="name"
                 />
                 {errors.name && <p className="form-error">{errors.name}</p>}
@@ -173,13 +230,15 @@ export default function Auth() {
             )}
             <button
               type="submit"
-              className="btn btn--primary btn--lg auth-submit"
+              className={`btn btn--lg auth-submit ${role === 'owner' ? 'btn--accent' : 'btn--primary'}`}
               disabled={loading}
               id="auth-submit-btn"
             >
               {loading ? (
                 <span className="auth-spinner" />
-              ) : isSignup ? 'Create Account' : 'Sign In'}
+              ) : isSignup
+                  ? (role === 'owner' ? '🏠 Create Host Account' : 'Create Account')
+                  : (role === 'owner' ? '🏠 Sign In as Host' : 'Sign In')}
             </button>
           </form>
 

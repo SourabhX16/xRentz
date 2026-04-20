@@ -2,13 +2,13 @@ import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ListingCard from '../components/ListingCard';
 import SearchBar from '../components/SearchBar';
-import { listings, categories, amenities } from '../data/listings';
+import { listings as staticListings, categories, amenities } from '../data/listings';
 import { useApp } from '../context/AppContext';
 import './Listings.css';
 
 export default function Listings() {
   const [searchParams] = useSearchParams();
-  const { searchFilters, setSearchFilters } = useApp();
+  const { searchFilters, setSearchFilters, ownerListings } = useApp();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
@@ -17,8 +17,10 @@ export default function Listings() {
 
   const categoryParam = searchParams.get('category') || 'all';
 
+  const allListings = useMemo(() => [...staticListings, ...ownerListings], [ownerListings]);
+
   const filtered = useMemo(() => {
-    let result = [...listings];
+    let result = [...allListings];
 
     if (categoryParam !== 'all') {
       result = result.filter(l => l.category === categoryParam);
@@ -49,7 +51,7 @@ export default function Listings() {
     }
 
     return result;
-  }, [categoryParam, searchFilters, priceRange, selectedAmenities, sortBy]);
+  }, [categoryParam, searchFilters, priceRange, selectedAmenities, sortBy, allListings]);
 
   const toggleAmenity = (a) => {
     setSelectedAmenities(prev =>

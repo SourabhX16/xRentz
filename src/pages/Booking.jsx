@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
-import { listings } from '../data/listings';
+import { listings as staticListings } from '../data/listings';
 import { useApp } from '../context/AppContext';
 import './Booking.css';
 
@@ -8,8 +8,9 @@ export default function Booking() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, addBooking, addToast } = useApp();
-  const listing = listings.find(l => l.id === parseInt(id));
+  const { user, addBooking, addToast, ownerListings } = useApp();
+  const allListings = [...staticListings, ...ownerListings];
+  const listing = allListings.find(l => l.id === parseInt(id)) || allListings.find(l => l.id === Number(id));
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({

@@ -1,12 +1,16 @@
 import { Link } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import ListingCard from '../components/ListingCard';
-import { listings, categories, popularDestinations } from '../data/listings';
+import { listings as staticListings, categories, popularDestinations } from '../data/listings';
+import { useApp } from '../context/AppContext';
 import './Home.css';
 
 export default function Home() {
-  const featured = listings.filter(l => l.superhost).slice(0, 4);
-  const trending = listings.slice(0, 8);
+  const { ownerListings } = useApp();
+  const allListings = [...staticListings, ...ownerListings];
+  const featured = allListings.filter(l => l.superhost).slice(0, 4);
+  const trending = allListings.slice(0, 8);
+  const newlyListed = ownerListings.slice(-4);
 
   return (
     <div className="home">
@@ -130,6 +134,24 @@ export default function Home() {
         </div>
       </section>
 
+      {/* NEWLY LISTED (owner created) */}
+      {newlyListed.length > 0 && (
+        <section className="section container" id="newly-listed-section">
+          <div className="section__header">
+            <div>
+              <h2 className="section__title">🆕 Newly Listed</h2>
+              <p className="section__subtitle">Fresh properties just added by hosts</p>
+            </div>
+            <Link to="/listings" className="btn btn--secondary btn--sm">View All →</Link>
+          </div>
+          <div className="listing-grid stagger">
+            {newlyListed.map((listing, i) => (
+              <ListingCard key={listing.id} listing={listing} index={i} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* CTA BANNER */}
       <section className="cta-banner container" id="cta-section">
         <div className="cta-banner__inner">
@@ -138,7 +160,7 @@ export default function Home() {
             <p className="cta-banner__text">
               Turn your space into income. List for free and start earning from day one.
             </p>
-            <Link to="/auth?mode=signup" className="btn btn--accent btn--lg">
+            <Link to="/auth?mode=signup&role=owner" className="btn btn--accent btn--lg">
               Start Hosting Today
             </Link>
           </div>
