@@ -23,7 +23,7 @@ const emptyForm = {
   bathrooms: 1,
   description: '',
   selectedAmenities: [],
-  imageUrl: '',
+  images: [],
 };
 
 export default function OwnerDashboard() {
@@ -80,6 +80,25 @@ export default function OwnerDashboard() {
     return Object.keys(errors).length === 0;
   };
 
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    
+    // Simulate real upload by converting to Data URLs
+    Promise.all(files.map(file => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    })).then(dataUrls => {
+      setForm(prev => ({
+        ...prev,
+        images: [...prev.images, ...dataUrls].slice(0, 5) // max 5 images
+      }));
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -96,7 +115,7 @@ export default function OwnerDashboard() {
       bathrooms: Number(form.bathrooms),
       description: form.description,
       amenities: form.selectedAmenities,
-      images: form.imageUrl ? [form.imageUrl, ...randomImages.slice(0, 2)] : randomImages,
+      images: form.images.length > 0 ? form.images : randomImages,
       lat: 40 + Math.random() * 10,
       lng: -120 + Math.random() * 40,
     });
@@ -283,18 +302,39 @@ export default function OwnerDashboard() {
                       </select>
                     </div>
 
-                    {/* Image URL */}
+                    {/* Image Upload */}
                     <div className="form-group owner-form__full">
-                      <label className="form-label" htmlFor="prop-image">Cover Image URL (optional)</label>
-                      <input
-                        id="prop-image"
-                        type="url"
-                        className="form-input"
-                        value={form.imageUrl}
-                        onChange={e => updateField('imageUrl', e.target.value)}
-                        placeholder="https://example.com/photo.jpg"
-                      />
-                      <p className="form-hint">Leave blank and we'll use beautiful placeholder images.</p>
+                      <label className="form-label">Upload Images (Max 5)</label>
+                      <div className="owner-form__upload-zone">
+                        <input
+                          type="file"
+                          id="prop-images"
+                          multiple
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="owner-form__file-input"
+                        />
+                        <label htmlFor="prop-images" className="owner-form__upload-label">
+                          <span className="upload-icon">📸</span>
+                          <span>Click to browse or drag and drop</span>
+                          <small>JPG, PNG, WebP up to 5MB</small>
+                        </label>
+                      </div>
+                      
+                      {form.images.length > 0 && (
+                        <div className="owner-form__image-preview-grid">
+                          {form.images.map((src, i) => (
+                            <div key={i} className="owner-form__image-preview">
+                              <img src={src} alt={`Upload preview ${i}`} />
+                              <button 
+                                type="button" 
+                                className="owner-form__image-remove"
+                                onClick={() => setForm(prev => ({ ...prev, images: prev.images.filter((_, idx) => idx !== i) }))}
+                              >✕</button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* Description */}

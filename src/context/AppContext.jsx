@@ -4,11 +4,11 @@ const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
   const [theme, setThemeState] = useState(() => localStorage.getItem('theme') || 'light');
-  const [user, setUser] = useState(null);
-  const [bookings, setBookings] = useState([]);
-  const [favorites, setFavorites] = useState([]);
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user')) || null);
+  const [bookings, setBookings] = useState(() => JSON.parse(localStorage.getItem('bookings')) || []);
+  const [favorites, setFavorites] = useState(() => JSON.parse(localStorage.getItem('favorites')) || []);
+  const [ownerListings, setOwnerListings] = useState(() => JSON.parse(localStorage.getItem('ownerListings')) || []);
   const [toasts, setToasts] = useState([]);
-  const [ownerListings, setOwnerListings] = useState([]);
   const [searchFilters, setSearchFilters] = useState({
     location: '',
     checkIn: '',
@@ -18,6 +18,23 @@ export function AppProvider({ children }) {
     priceMin: 0,
     priceMax: 1000,
   });
+
+  // Sync to localStorage
+  useEffect(() => {
+    localStorage.setItem('user', JSON.stringify(user));
+  }, [user]);
+
+  useEffect(() => {
+    localStorage.setItem('bookings', JSON.stringify(bookings));
+  }, [bookings]);
+
+  useEffect(() => {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  useEffect(() => {
+    localStorage.setItem('ownerListings', JSON.stringify(ownerListings));
+  }, [ownerListings]);
 
   const addToast = useCallback((message, type = 'info') => {
     const id = Date.now();

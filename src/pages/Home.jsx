@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import ListingCard from '../components/ListingCard';
@@ -13,7 +14,12 @@ export default function Home() {
   const newlyListed = ownerListings.slice(-4);
 
   return (
-    <div className="home">
+    <motion.div 
+      className="home"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
       {/* HERO */}
       <section className="hero" id="hero-section">
         <div className="hero__bg">
@@ -199,6 +205,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-    </div>
+    </motion.div>
   );
 }
