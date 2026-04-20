@@ -1,10 +1,19 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import SearchBar from '../components/SearchBar';
 import ListingCard from '../components/ListingCard';
+import DestinationWall from '../components/DestinationWall';
 import { listings as staticListings, categories, popularDestinations } from '../data/listings';
 import { useApp } from '../context/AppContext';
 import './Home.css';
+
+const HERO_BACKGROUNDS = [
+  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&h=1080&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1920&h=1080&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&h=1080&fit=crop&q=80",
+  "https://images.unsplash.com/photo-1549158743-11b30715b74c?w=1920&h=1080&fit=crop&q=80"
+];
 
 export default function Home() {
   const { ownerListings } = useApp();
@@ -12,6 +21,25 @@ export default function Home() {
   const featured = allListings.filter(l => l.superhost).slice(0, 4);
   const trending = allListings.slice(0, 8);
   const newlyListed = ownerListings.slice(-4);
+  
+  const [bgIndex, setBgIndex] = useState(0);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % HERO_BACKGROUNDS.length);
+    }, 8000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleMouseMove = (e) => {
+    const { clientX, clientY } = e;
+    const x = (clientX / window.innerWidth - 0.5) * -30;
+    const y = (clientY / window.innerHeight - 0.5) * -30;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
 
   return (
     <motion.div 
@@ -21,13 +49,22 @@ export default function Home() {
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       {/* HERO */}
-      <section className="hero" id="hero-section">
+      <section className="hero" id="hero-section" onMouseMove={handleMouseMove}>
         <div className="hero__bg">
-          <img
-            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&h=1080&fit=crop&q=80"
-            alt="Beautiful rental property"
-            className="hero__bg-image"
-          />
+          <motion.div style={{ x: mouseX, y: mouseY, width: '100%', height: '100%' }}>
+            <AnimatePresence mode="wait">
+              <motion.img
+                key={HERO_BACKGROUNDS[bgIndex]}
+                src={HERO_BACKGROUNDS[bgIndex]}
+                alt="Beautiful rental property"
+                className="hero__bg-image"
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 1.5, ease: "easeInOut" }}
+              />
+            </AnimatePresence>
+          </motion.div>
           <div className="hero__overlay" />
         </div>
         <div className="hero__content container">
@@ -96,6 +133,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* DESTINATION WALL */}
+      <DestinationWall />
 
       {/* DESTINATIONS */}
       <section className="section container" id="destinations-section">

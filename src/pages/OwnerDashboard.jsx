@@ -40,7 +40,7 @@ function LocationPicker({ lat, lng, onChange }) {
 }
 
 export default function OwnerDashboard() {
-  const { user, ownerListings, addOwnerListing, removeOwnerListing, logout, addToast } = useApp();
+  const { user, ownerListings, addOwnerListing, removeOwnerListing, logout, addToast, bookings, addBooking: addOwnerBooking } = useApp();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('properties');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -142,10 +142,31 @@ export default function OwnerDashboard() {
 
   const tabs = [
     { id: 'properties', label: '🏠 My Properties', count: ownerListings.length },
+    { id: 'availability', label: '📅 Availability', count: null },
     { id: 'bookings', label: '📋 Bookings Received', count: ownerListings.length > 0 ? 2 : 0 },
     { id: 'earnings', label: '💰 Earnings', count: null },
     { id: 'profile', label: '👤 Profile', count: null },
   ];
+
+  const handleBlockDates = (e) => {
+    e.preventDefault();
+    const lId = parseInt(e.target.listingId.value);
+    const start = e.target.start.value;
+    const end = e.target.end.value;
+
+    if (!lId || !start || !end) return;
+
+    addOwnerBooking({
+      listingId: lId,
+      checkIn: start,
+      checkOut: end,
+      guestName: 'OWNER BLOCKED',
+      status: 'blocked',
+      total: 0,
+      guests: 0
+    });
+    addToast('Dates blocked successfully', 'success');
+  };
 
   return (
     <div className="dashboard container">
@@ -465,6 +486,48 @@ export default function OwnerDashboard() {
                 )}
               </>
             )}
+          </div>
+        )}
+
+        {/* ── AVAILABILITY TAB ── */}
+        {activeTab === 'availability' && (
+          <div className="owner-availability animate-fade-in">
+            <div className="owner-availability__grid">
+              <div className="availability-card">
+                <h3>Block Dates Manually</h3>
+                <form className="block-form" onSubmit={handleBlockDates}>
+                  <select name="listingId" className="form-input" required>
+                    <option value="">Select Property</option>
+                    {ownerListings.map(l => <option key={l.id} value={l.id}>{l.title}</option>)}
+                  </select>
+                  <div className="form-row">
+                    <input type="date" name="start" className="form-input" required />
+                    <input type="date" name="end" className="form-input" required />
+                  </div>
+                  <button type="submit" className="btn btn--danger btn--md" style={{ width: '100%', marginTop: '10px' }}>
+                    Block These Dates
+                  </button>
+                </form>
+              </div>
+
+              <div className="availability-card">
+                <h3>Current Schedule</h3>
+                <div className="schedule-list">
+                  {bookings.filter(b => ownerListings.some(ol => ol.id === b.listingId)).map(b => (
+                    <div key={b.id} className="schedule-item">
+                      <div className="schedule-item__info">
+                        <strong>{b.listingTitle || 'Your Property'}</strong>
+                        <span>{b.checkIn} to {b.checkOut}</span>
+                      </div>
+                      <span className={`status-badge status-badge--${b.status}`}>{b.status}</span>
+                    </div>
+                  ))}
+                  {bookings.filter(b => ownerListings.some(ol => ol.id === b.listingId)).length === 0 && (
+                    <p className="empty-txt">No bookings or blocked dates yet.</p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

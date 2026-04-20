@@ -1,0 +1,88 @@
+.atmosphere {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.atmosphere-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.6;
+}
+
+/* BEACH WAVES */
+.beach-waves .wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  height: 400px;
+  background: radial-gradient(circle at center, rgba(0, 191, 255, 0.1) 0%, transparent 70%);
+  border-radius: 43%;
+  animation: waveScroll 15s infinite linear;
+  filter: blur(40px);
+}
+
+.beach-waves .wave2 {
+  opacity: 0.5;
+  animation-duration: 20s;
+  background: radial-gradient(circle at center, rgba(0, 255, 255, 0.1) 0%, transparent 70%);
+}
+
+.beach-waves .wave3 {
+  opacity: 0.3;
+  animation-duration: 25s;
+  background: radial-gradient(circle at center, rgba(64, 224, 208, 0.1) 0%, transparent 70%);
+}
+
+@keyframes waveScroll {
+  from { transform: translateX(0) rotate(0deg); }
+  to { transform: translateX(-50%) rotate(360deg); }
+}
+
+/* LUXURY GLOW (Sunny) */
+.luxury-glow .glow-orb {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255, 223, 0, 0.05) 0%, transparent 70%);
+  filter: blur(80px);
+  border-radius: 50%;
+  animation: floatOrb 20s infinite alternate ease-in-out;
+}
+
+.orb2 {
+  right: -200px;
+  bottom: -200px;
+  animation-delay: -10s;
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(100px, 50px) scale(1.2); }
+}
+
+/* CITY NIGHT */
+.city-night {
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 50, 0.2));
+}
+
+.city-bokeh {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 10%),
+    radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.03) 0%, transparent 15%),
+    radial-gradient(circle at 50% 50%, rgba(255, 165, 0, 0.02) 0%, transparent 20%);
+  filter: blur(20px);
+  animation: bokehPulse 10s infinite alternate;
+}
+
+@keyframes bokehPulse {
+  from { opacity: 0.3; transform: scale(1); }
+  to { opacity: 0.6; transform: scale(1.1); }
+}

@@ -2,6 +2,8 @@ import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
+import AiAgent from './components/AiAgent';
+import MembershipWidget from './components/MembershipWidget';
 import Home from './pages/Home';
 import Listings from './pages/Listings';
 import ListingDetail from './pages/ListingDetail';
@@ -28,6 +30,8 @@ export default function App() {
       </main>
       <Footer />
       <Toast />
+      <AiAgent />
+      <MembershipWidget />
     </div>
   );
 }

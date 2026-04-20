@@ -6,7 +6,7 @@
   right: 0;
   height: var(--navbar-height);
   z-index: 1000;
-  background: rgba(255, 255, 255, 0.95);
+  background: color-mix(in srgb, var(--color-white), transparent 5%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--color-neutral-200);
@@ -30,7 +30,7 @@
 }
 
 .navbar--scrolled {
-  background: rgba(255, 255, 255, 0.98);
+  background: color-mix(in srgb, var(--color-white), transparent 2%);
   backdrop-filter: blur(20px);
   box-shadow: var(--shadow-sm);
   border-bottom-color: var(--color-neutral-200);
@@ -86,7 +86,7 @@
   padding: var(--space-2) var(--space-4);
   font-size: var(--text-body-sm);
   font-weight: var(--fw-medium);
-  color: var(--color-neutral-600);
+  color: var(--color-neutral-800);
   border-radius: var(--radius-full);
   transition: all var(--duration-normal) var(--ease-default);
   text-decoration: none;
@@ -276,8 +276,8 @@
 
 .navbar__user-name {
   font-size: var(--text-body-sm);
-  font-weight: var(--fw-medium);
-  color: var(--color-neutral-700);
+  font-weight: var(--fw-semi);
+  color: var(--color-neutral-900);
 }
 
 .navbar__role-badge {

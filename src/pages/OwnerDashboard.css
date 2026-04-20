@@ -382,6 +382,89 @@
   background: rgba(239, 68, 68, 0.9);
 }
 
+/* ──/* AVAILABILITY */
+.owner-availability__grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: var(--space-8);
+  align-items: flex-start;
+}
+
+.availability-card {
+  background: var(--color-white);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-neutral-100);
+}
+
+.availability-card h3 {
+  margin-bottom: var(--space-4);
+  font-size: 1.1rem;
+}
+
+.block-form .form-input {
+  margin-bottom: var(--space-3);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.schedule-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3);
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-md);
+}
+
+.schedule-item__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-item__info span {
+  font-size: 0.8rem;
+  color: var(--color-neutral-500);
+}
+
+.status-badge--blocked {
+  background: #ffeded;
+  color: #ff4d4d;
+}
+
+.empty-txt {
+  text-align: center;
+  color: var(--color-neutral-400);
+  padding: var(--space-4);
+}
+
+/* RESPONSIVE DASHBOARD */
+@media (max-width: 1024px) {
+  .owner-prop-card {
+    flex-direction: column;
+  }
+  
+  .owner-prop-card__image {
+    width: 100%;
+    height: 200px;
+  }
+
+  .owner-availability__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .owner-form__grid {

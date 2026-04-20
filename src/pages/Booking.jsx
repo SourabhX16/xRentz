@@ -2,15 +2,40 @@ import { useState } from 'react';
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { listings as staticListings } from '../data/listings';
 import { useApp } from '../context/AppContext';
+import AtmosphereEffect from '../components/AtmosphereEffect';
 import './Booking.css';
 
 export default function Booking() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, addBooking, addToast, ownerListings } = useApp();
+  const { user, addBooking, addToast, ownerListings, hasMembership } = useApp();
+  const [discountApplied, setDiscountApplied] = useState(false);
   const allListings = [...staticListings, ...ownerListings];
   const listing = allListings.find(l => l.id === parseInt(id)) || allListings.find(l => l.id === Number(id));
+
+  const getAtmosphere = () => {
+    if (!listing) return 'sunny';
+    const cat = listing.category.toLowerCase();
+    const loc = listing.location.toLowerCase();
+    const title = listing.title.toLowerCase();
+    
+    // SNOW: Mountains, Cabins, High altitude
+    if (cat === 'cabin' || loc.includes('aspen') || loc.includes('manali') || loc.includes('colorado') || title.includes('snow') || title.includes('mountain')) return 'snow';
+    
+    // BEACH: Villas, Coastal areas, Island vibes
+    if (cat === 'villa' || loc.includes('malibu') || loc.includes('goa') || loc.includes('miami') || loc.includes('beach') || loc.includes('kerala') || title.includes('beach') || title.includes('ocean') || title.includes('sea')) return 'beach';
+    
+    // RAIN: Monsoon regions or Rainy cities
+    if (loc.includes('portland') || loc.includes('mumbai') || loc.includes('kerala') || loc.includes('monsoon')) return 'rain';
+
+    // CITY / NIGHT: Penthouses, Manhattan, Lofts
+    if (cat === 'penthouse' || cat === 'loft' || loc.includes('manhattan') || loc.includes('chicago') || loc.includes('bengaluru') || loc.includes('high-rise')) return 'city';
+    
+    return 'sunny';
+  };
+
+  const atmosphere = getAtmosphere();
 
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -18,10 +43,12 @@ export default function Booking() {
     lastName: user?.name?.split(' ')[1] || '',
     email: user?.email || '',
     phone: '',
-    cardNumber: '',
-    expiry: '',
-    cvc: '',
     specialRequests: '',
+    // Payment specific
+    paymentMethod: 'card',
+    accountNumber: '',
+    routingNumber: '',
+    digitalId: '',
   });
   const [errors, setErrors] = useState({});
 
@@ -41,7 +68,8 @@ export default function Booking() {
   const nights = checkIn && checkOut ? Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / 86400000)) : 1;
   const subtotal = listing.price * nights;
   const serviceFee = Math.round(subtotal * 0.12);
-  const total = subtotal + serviceFee;
+  const discountAmount = discountApplied ? Math.round((subtotal + serviceFee) * 0.10) : 0;
+  const total = subtotal + serviceFee - discountAmount;
 
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -57,9 +85,16 @@ export default function Booking() {
       else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Please enter a valid email';
       if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
     } else if (step === 2) {
-      if (!formData.cardNumber.trim()) newErrors.cardNumber = 'Card number is required';
-      if (!formData.expiry.trim()) newErrors.expiry = 'Expiry date is required';
-      if (!formData.cvc.trim()) newErrors.cvc = 'CVC is required';
+      if (formData.paymentMethod === 'card') {
+        if (!formData.cardNumber.trim()) newErrors.cardNumber = 'Card number is required';
+        if (!formData.expiry.trim()) newErrors.expiry = 'Expiry date is required';
+        if (!formData.cvc.trim()) newErrors.cvc = 'CVC is required';
+      } else if (formData.paymentMethod === 'bank') {
+        if (!formData.accountNumber.trim()) newErrors.accountNumber = 'Account number is required';
+        if (!formData.routingNumber.trim()) newErrors.routingNumber = 'Routing number is required';
+      } else if (formData.paymentMethod === 'digital') {
+        if (!formData.digitalId.trim()) newErrors.digitalId = 'Digital ID (Email/Phone) is required';
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -72,7 +107,7 @@ export default function Booking() {
   };
 
   const handleConfirm = () => {
-    addBooking({
+    const success = addBooking({
       listingId: listing.id,
       listingTitle: listing.title,
       listingImage: listing.images[0],
@@ -82,11 +117,12 @@ export default function Booking() {
       total,
       guestName: `${formData.firstName} ${formData.lastName}`,
     });
-    setStep(4);
+    if (success) setStep(4);
   };
 
   return (
     <div className="booking-page container">
+      <AtmosphereEffect type={atmosphere} />
       <div className="booking-page__back">
         <Link to={`/listing/${listing.id}`} className="btn btn--ghost btn--sm">← Back to listing</Link>
       </div>
@@ -150,26 +186,63 @@ export default function Booking() {
               <h2 className="booking-step__title">Payment</h2>
               <p className="booking-step__desc">Enter your payment details securely</p>
               <div className="payment-methods">
-                <button className="payment-method payment-method--active">💳 Credit Card</button>
-                <button className="payment-method">🏦 Bank Transfer</button>
-                <button className="payment-method">📱 Digital Wallet</button>
+                <button 
+                  className={`payment-method ${formData.paymentMethod === 'card' ? 'payment-method--active' : ''}`}
+                  onClick={() => updateField('paymentMethod', 'card')}
+                >💳 Credit Card</button>
+                <button 
+                  className={`payment-method ${formData.paymentMethod === 'bank' ? 'payment-method--active' : ''}`}
+                  onClick={() => updateField('paymentMethod', 'bank')}
+                >🏦 Bank Transfer</button>
+                <button 
+                  className={`payment-method ${formData.paymentMethod === 'digital' ? 'payment-method--active' : ''}`}
+                  onClick={() => updateField('paymentMethod', 'digital')}
+                >📱 Digital Wallet</button>
               </div>
+              
               <div className="booking-form-grid booking-form-grid--payment">
-                <div className="form-group form-group--full">
-                  <label htmlFor="b-card" className="form-label">Card Number <span className="form-required">*</span></label>
-                  <input id="b-card" type="text" className={`form-input ${errors.cardNumber ? 'form-input--error' : ''}`} value={formData.cardNumber} onChange={e => updateField('cardNumber', e.target.value)} placeholder="4242 4242 4242 4242" maxLength="19" />
-                  {errors.cardNumber && <p className="form-error">{errors.cardNumber}</p>}
-                </div>
-                <div className="form-group">
-                  <label htmlFor="b-expiry" className="form-label">Expiry <span className="form-required">*</span></label>
-                  <input id="b-expiry" type="text" className={`form-input ${errors.expiry ? 'form-input--error' : ''}`} value={formData.expiry} onChange={e => updateField('expiry', e.target.value)} placeholder="MM/YY" maxLength="5" />
-                  {errors.expiry && <p className="form-error">{errors.expiry}</p>}
-                </div>
-                <div className="form-group">
-                  <label htmlFor="b-cvc" className="form-label">CVC <span className="form-required">*</span></label>
-                  <input id="b-cvc" type="text" className={`form-input ${errors.cvc ? 'form-input--error' : ''}`} value={formData.cvc} onChange={e => updateField('cvc', e.target.value)} placeholder="123" maxLength="4" />
-                  {errors.cvc && <p className="form-error">{errors.cvc}</p>}
-                </div>
+                {formData.paymentMethod === 'card' && (
+                  <>
+                    <div className="form-group form-group--full">
+                      <label htmlFor="b-card" className="form-label">Card Number <span className="form-required">*</span></label>
+                      <input id="b-card" type="text" className={`form-input ${errors.cardNumber ? 'form-input--error' : ''}`} value={formData.cardNumber} onChange={e => updateField('cardNumber', e.target.value)} placeholder="4242 4242 4242 4242" maxLength="19" />
+                      {errors.cardNumber && <p className="form-error">{errors.cardNumber}</p>}
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="b-expiry" className="form-label">Expiry <span className="form-required">*</span></label>
+                      <input id="b-expiry" type="text" className={`form-input ${errors.expiry ? 'form-input--error' : ''}`} value={formData.expiry} onChange={e => updateField('expiry', e.target.value)} placeholder="MM/YY" maxLength="5" />
+                      {errors.expiry && <p className="form-error">{errors.expiry}</p>}
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="b-cvc" className="form-label">CVC <span className="form-required">*</span></label>
+                      <input id="b-cvc" type="text" className={`form-input ${errors.cvc ? 'form-input--error' : ''}`} value={formData.cvc} onChange={e => updateField('cvc', e.target.value)} placeholder="123" maxLength="4" />
+                      {errors.cvc && <p className="form-error">{errors.cvc}</p>}
+                    </div>
+                  </>
+                )}
+
+                {formData.paymentMethod === 'bank' && (
+                  <>
+                    <div className="form-group form-group--full">
+                      <label htmlFor="b-acc" className="form-label">Account Number <span className="form-required">*</span></label>
+                      <input id="b-acc" type="text" className={`form-input ${errors.accountNumber ? 'form-input--error' : ''}`} value={formData.accountNumber} onChange={e => updateField('accountNumber', e.target.value)} placeholder="000123456789" />
+                      {errors.accountNumber && <p className="form-error">{errors.accountNumber}</p>}
+                    </div>
+                    <div className="form-group form-group--full">
+                      <label htmlFor="b-route" className="form-label">Routing Number <span className="form-required">*</span></label>
+                      <input id="b-route" type="text" className={`form-input ${errors.routingNumber ? 'form-input--error' : ''}`} value={formData.routingNumber} onChange={e => updateField('routingNumber', e.target.value)} placeholder="123456789" />
+                      {errors.routingNumber && <p className="form-error">{errors.routingNumber}</p>}
+                    </div>
+                  </>
+                )}
+
+                {formData.paymentMethod === 'digital' && (
+                  <div className="form-group form-group--full">
+                    <label htmlFor="b-digital" className="form-label">Email / Wallet ID <span className="form-required">*</span></label>
+                    <input id="b-digital" type="text" className={`form-input ${errors.digitalId ? 'form-input--error' : ''}`} value={formData.digitalId} onChange={e => updateField('digitalId', e.target.value)} placeholder="user@paypal or apple-pay-id" />
+                    {errors.digitalId && <p className="form-error">{errors.digitalId}</p>}
+                  </div>
+                )}
               </div>
               <div className="payment-secure">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-success-500)" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
@@ -201,7 +274,11 @@ export default function Booking() {
                 </div>
                 <div className="review-summary__section">
                   <h3>Payment</h3>
-                  <p>Card ending in {formData.cardNumber.slice(-4) || '****'}</p>
+                  <p>
+                    {formData.paymentMethod === 'card' && `Card ending in ${formData.cardNumber.slice(-4) || '****'}`}
+                    {formData.paymentMethod === 'bank' && `Bank Transfer (Acc: ${formData.accountNumber.slice(-4) || '****'})`}
+                    {formData.paymentMethod === 'digital' && `Digital Wallet: ${formData.digitalId}`}
+                  </p>
                   <p className="review-summary__total">Total: <strong>${total}</strong></p>
                 </div>
               </div>
@@ -271,6 +348,25 @@ export default function Booking() {
                   <span>Service fee</span>
                   <span>${serviceFee}</span>
                 </div>
+                {hasMembership && (
+                  <div className={`booking-summary__vip-box ${discountApplied ? 'active' : ''}`} onClick={() => setDiscountApplied(!discountApplied)}>
+                    <div className="vip-box-header">
+                      <span>💎 VIP Membership</span>
+                      <div className={`vip-toggle ${discountApplied ? 'on' : ''}`}></div>
+                    </div>
+                    {discountApplied ? (
+                      <p className="vip-discount-notice">-10% Discount Applied! ✨</p>
+                    ) : (
+                      <p className="vip-discount-notice">Tap to apply VIP discount</p>
+                    )}
+                  </div>
+                )}
+                {discountApplied && (
+                  <div className="booking-summary__line discount-line">
+                    <span>VIP Discount (10%)</span>
+                    <span>-${discountAmount}</span>
+                  </div>
+                )}
                 <div className="booking-summary__line booking-summary__line--total">
                   <span>Total</span>
                   <span>${total}</span>

@@ -8,6 +8,7 @@ export function AppProvider({ children }) {
   const [bookings, setBookings] = useState(() => JSON.parse(localStorage.getItem('bookings')) || []);
   const [favorites, setFavorites] = useState(() => JSON.parse(localStorage.getItem('favorites')) || []);
   const [ownerListings, setOwnerListings] = useState(() => JSON.parse(localStorage.getItem('ownerListings')) || []);
+  const [memberships, setMemberships] = useState(() => JSON.parse(localStorage.getItem('memberships')) || {});
   const [toasts, setToasts] = useState([]);
   const [searchFilters, setSearchFilters] = useState({
     location: '',
@@ -35,6 +36,10 @@ export function AppProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('ownerListings', JSON.stringify(ownerListings));
   }, [ownerListings]);
+
+  useEffect(() => {
+    localStorage.setItem('memberships', JSON.stringify(memberships));
+  }, [memberships]);
 
   const addToast = useCallback((message, type = 'info') => {
     const id = Date.now();
@@ -75,10 +80,28 @@ export function AppProvider({ children }) {
     );
   }, []);
 
+  const checkAvailability = useCallback((listingId, start, end) => {
+    if (!start || !end) return true;
+    const s = new Date(start);
+    const e = new Date(end);
+    
+    return !bookings.some(b => {
+      if (b.listingId !== listingId) return false;
+      const bStart = new Date(b.checkIn);
+      const bEnd = new Date(b.checkOut);
+      return (s < bEnd && e > bStart);
+    });
+  }, [bookings]);
+
   const addBooking = useCallback((booking) => {
+    if (!checkAvailability(booking.listingId, booking.checkIn, booking.checkOut)) {
+      addToast('Sorry, these dates were just booked!', 'error');
+      return false;
+    }
     setBookings(prev => [...prev, { ...booking, id: Date.now(), status: 'confirmed' }]);
     addToast('Booking confirmed! 🎉', 'success');
-  }, [addToast]);
+    return true;
+  }, [addToast, checkAvailability]);
 
   const addOwnerListing = useCallback((listing) => {
     const newListing = {
@@ -110,6 +133,27 @@ export function AppProvider({ children }) {
     addToast('Property updated! ✅', 'success');
   }, [addToast]);
 
+  const buyMembership = useCallback((paymentData) => {
+    const userId = user ? user.email : 'guest';
+    const cardId = `XRZ-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const expiry = new Date();
+    expiry.setFullYear(expiry.getFullYear() + 1);
+
+    const newMembership = {
+      isMember: true,
+      cardId,
+      expiry: expiry.toLocaleDateString(),
+      joinedDate: new Date().toLocaleDateString(),
+    };
+
+    setMemberships(prev => ({ ...prev, [userId]: newMembership }));
+    addToast(`VIP Membership Activated! Card: ${cardId}`, 'success');
+    return newMembership;
+  }, [user, addToast]);
+
+  const hasMembership = memberships[user ? user.email : 'guest']?.isMember || false;
+  const membershipData = memberships[user ? user.email : 'guest'] || null;
+
   return (
     <AppContext.Provider value={{
       theme, setTheme,
@@ -119,6 +163,8 @@ export function AppProvider({ children }) {
       toasts, addToast,
       searchFilters, setSearchFilters,
       ownerListings, addOwnerListing, removeOwnerListing, updateOwnerListing,
+      hasMembership, buyMembership, membershipData,
+      checkAvailability,
     }}>
       {children}
     </AppContext.Provider>
