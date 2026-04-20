@@ -59,7 +59,7 @@ export default function Navbar() {
           <button className="navbar__theme-btn" onClick={toggleTheme} aria-label={`Switch theme (current: ${theme})`}>
             {theme === 'light' && '☀️'}
             {theme === 'dark' && '🌙'}
-            {theme === 'neon' && '⚡'}
+            {theme === 'neon' && '✨'}
           </button>
 
           {user ? (
