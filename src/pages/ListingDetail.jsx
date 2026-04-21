@@ -1,34 +1,40 @@
-import { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { listings as staticListings, reviews as allReviews } from '../data/listings';
-import { useApp } from '../context/AppContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { useListing } from '../hooks/useListing';
+import ImageGallery from '../components/listing-detail/ImageGallery';
+import BookingCard from '../components/listing-detail/BookingCard';
 import './ListingDetail.css';
 
+/**
+ * Listing Detail Page
+ * Displays comprehensive information about a single property and provides booking functionality.
+ * 
+ * @page
+ * @returns {JSX.Element}
+ */
 export default function ListingDetail() {
-  const { id } = useParams();
   const navigate = useNavigate();
-  const { user, favorites, toggleFavorite, addToast, ownerListings } = useApp();
-  const allListings = [...staticListings, ...ownerListings];
-  const listing = allListings.find(l => l.id === parseInt(id)) || allListings.find(l => l.id === Number(id));
-  const [activeImg, setActiveImg] = useState(0);
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
-  const [guests, setGuests] = useState(1);
+  const {
+    listing,
+    listingReviews,
+    activeImg,
+    setActiveImg,
+    checkIn,
+    setCheckIn,
+    checkOut,
+    setCheckOut,
+    guests,
+    setGuests,
+    isFav,
+    toggleFavorite,
+    nights,
+    serviceFee,
+    total,
+    user,
+    addToast
+  } = useListing();
 
-  if (!listing) {
-    return (
-      <div className="container" style={{ padding: '120px 24px', textAlign: 'center' }}>
-        <h2>Listing not found</h2>
-        <Link to="/listings" className="btn btn--primary btn--md" style={{ marginTop: 24 }}>Browse Listings</Link>
-      </div>
-    );
-  }
-
-  const listingReviews = allReviews.filter(r => r.listingId === listing.id);
-  const isFav = favorites.includes(listing.id);
-  const nights = checkIn && checkOut ? Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / 86400000)) : 1;
-  const serviceFee = Math.round(listing.price * nights * 0.12);
-  const total = listing.price * nights + serviceFee;
+  // Guard: Listing not found
+  if (!listing) return <ListingNotFound />;
 
   const handleReserve = () => {
     if (!user) {
@@ -39,203 +45,196 @@ export default function ListingDetail() {
     navigate(`/booking/${listing.id}?checkIn=${checkIn}&checkOut=${checkOut}&guests=${guests}`);
   };
 
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    addToast('Link copied to clipboard!', 'success');
+  };
+
   return (
-    <div className="detail-page container">
-      {/* BREADCRUMB */}
+    <main className="detail-page container">
+      {/* BREADCRUMB NAVIGATION */}
       <nav className="detail-breadcrumb" aria-label="Breadcrumb">
-        <Link to="/">Home</Link>
-        <span>/</span>
-        <Link to="/listings">Listings</Link>
-        <span>/</span>
-        <span>{listing.title}</span>
+        <ol className="breadcrumb-list">
+          <li><Link to="/">Home</Link></li>
+          <li aria-hidden="true">/</li>
+          <li><Link to="/listings">Listings</Link></li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page">{listing.title}</li>
+        </ol>
       </nav>
 
-      {/* TITLE BAR */}
-      <div className="detail-titlebar">
-        <div>
+      {/* HEADER SECTION */}
+      <header className="detail-titlebar">
+        <div className="detail-titlebar__info">
           <h1 className="detail-titlebar__title">{listing.title}</h1>
           <div className="detail-titlebar__meta">
-            <span className="detail-titlebar__rating">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-neutral-900)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              {listing.rating} · {listing.reviews} reviews
-            </span>
+            <RatingDisplay rating={listing.rating} reviewsCount={listing.reviews} />
             {listing.superhost && <span className="detail-titlebar__superhost">⭐ Superhost</span>}
             <span className="detail-titlebar__location">📍 {listing.location}</span>
           </div>
         </div>
+        
         <div className="detail-titlebar__actions">
-          <button className="btn btn--ghost btn--sm" onClick={() => { navigator.clipboard.writeText(window.location.href); addToast('Link copied!', 'success'); }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          <button className="btn btn--ghost btn--sm" onClick={handleShare}>
+            <ShareIcon />
             Share
           </button>
-          <button className={`btn btn--ghost btn--sm ${isFav ? 'detail-fav--active' : ''}`} onClick={() => toggleFavorite(listing.id)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={isFav ? 'var(--color-error-500)' : 'none'} stroke={isFav ? 'var(--color-error-500)' : 'currentColor'} strokeWidth="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
+          <button 
+            className={`btn btn--ghost btn--sm ${isFav ? 'detail-fav--active' : ''}`} 
+            onClick={() => toggleFavorite(listing.id)}
+            aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
+          >
+            <HeartIcon filled={isFav} />
             {isFav ? 'Saved' : 'Save'}
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* GALLERY */}
-      <div className="detail-gallery" id="gallery">
-        <div className="detail-gallery__main">
-          <img src={listing.images[activeImg]} alt={listing.title} className="detail-gallery__img" />
-        </div>
-        <div className="detail-gallery__thumbs">
-          {listing.images.map((img, i) => (
-            <button
-              key={i}
-              className={`detail-gallery__thumb ${i === activeImg ? 'detail-gallery__thumb--active' : ''}`}
-              onClick={() => setActiveImg(i)}
-              aria-label={`View image ${i + 1}`}
-            >
-              <img src={img} alt={`${listing.title} ${i + 1}`} />
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* VISUAL GALLERY */}
+      <ImageGallery 
+        images={listing.images} 
+        activeImg={activeImg} 
+        setActiveImg={setActiveImg} 
+        title={listing.title} 
+      />
 
-      {/* CONTENT */}
+      {/* CORE CONTENT GRID */}
       <div className="detail-content">
-        <div className="detail-content__main">
-          {/* HOST */}
-          <div className="detail-host">
-            <div className="detail-host__avatar">{listing.host.avatar}</div>
+        <section className="detail-content__main">
+          {/* HOST INFORMATION */}
+          <section className="detail-host">
+            <div className="detail-host__avatar" aria-hidden="true">{listing.host.avatar}</div>
             <div>
               <h3 className="detail-host__name">Hosted by {listing.host.name}</h3>
-              <p className="detail-host__meta">Joined in {listing.host.joined} · {listing.host.responseRate} response rate</p>
+              <p className="detail-host__meta">
+                Joined in {listing.host.joined} · {listing.host.responseRate} response rate
+              </p>
             </div>
-          </div>
+          </section>
 
-          {/* HIGHLIGHTS */}
-          <div className="detail-highlights">
-            <div className="detail-highlight">
-              <span className="detail-highlight__icon">🏠</span>
-              <div>
-                <strong>{listing.guests} guests</strong>
-                <span> · {listing.bedrooms} bedroom{listing.bedrooms > 1 ? 's' : ''} · {listing.bathrooms} bath{listing.bathrooms > 1 ? 's' : ''}</span>
-              </div>
-            </div>
+          {/* PROPERTY FEATURES */}
+          <section className="detail-highlights">
+            <HighlightItem icon="🏠" bold={`${listing.guests} guests`} text={`· ${listing.bedrooms} BR · ${listing.bathrooms} Bath`} />
             {listing.superhost && (
-              <div className="detail-highlight">
-                <span className="detail-highlight__icon">⭐</span>
-                <div>
-                  <strong>Superhost</strong>
-                  <span> · {listing.host.name} is a highly rated host</span>
-                </div>
-              </div>
+              <HighlightItem icon="⭐" bold="Superhost" text={`· ${listing.host.name} is top-rated`} />
             )}
-            <div className="detail-highlight">
-              <span className="detail-highlight__icon">📍</span>
-              <div>
-                <strong>Great location</strong>
-                <span> · 95% of guests gave 5-star ratings for location</span>
-              </div>
-            </div>
-          </div>
+            <HighlightItem icon="📍" bold="Great location" text="· 95% of guests love this area" />
+          </section>
 
           {/* DESCRIPTION */}
-          <div className="detail-section">
+          <article className="detail-section">
             <h2 className="detail-section__title">About this place</h2>
             <p className="detail-section__text">{listing.description}</p>
-          </div>
+          </article>
 
           {/* AMENITIES */}
-          <div className="detail-section">
-            <h2 className="detail-section__title">Amenities</h2>
+          <section className="detail-section">
+            <h2 className="detail-section__title">What this place offers</h2>
             <div className="detail-amenities">
               {listing.amenities.map(a => (
                 <div key={a} className="detail-amenity">
-                  <span className="detail-amenity__icon">✓</span>
+                  <span className="detail-amenity__icon" aria-hidden="true">✓</span>
                   {a}
                 </div>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* REVIEWS */}
-          <div className="detail-section">
+          {/* REVIEWS SECTION */}
+          <section className="detail-section">
             <h2 className="detail-section__title">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="var(--color-neutral-900)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              {listing.rating} · {listing.reviews} reviews
+              <RatingDisplay rating={listing.rating} reviewsCount={listing.reviews} large />
             </h2>
             <div className="detail-reviews">
-              {listingReviews.length > 0 ? listingReviews.map(r => (
-                <div key={r.id} className="detail-review">
-                  <div className="detail-review__header">
-                    <span className="detail-review__avatar">{r.avatar}</span>
-                    <div>
-                      <strong className="detail-review__user">{r.user}</strong>
-                      <p className="detail-review__date">{r.date}</p>
-                    </div>
-                  </div>
-                  <p className="detail-review__text">{r.text}</p>
-                </div>
-              )) : (
-                <p className="detail-review__empty">No reviews yet. Be the first to review!</p>
+              {listingReviews.length > 0 ? (
+                listingReviews.map(r => <ReviewItem key={r.id} review={r} />)
+              ) : (
+                <p className="detail-review__empty">No reviews yet. Be the first to share your experience!</p>
               )}
             </div>
-          </div>
-        </div>
+          </section>
+        </section>
 
         {/* BOOKING SIDEBAR */}
-        <aside className="detail-sidebar" id="booking-sidebar">
-          <div className="booking-card">
-            <div className="booking-card__header">
-              <div className="booking-card__price">
-                <span className="booking-card__amount">${listing.price}</span>
-                <span className="booking-card__unit">/ night</span>
-              </div>
-              <div className="booking-card__rating">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--color-neutral-900)"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                {listing.rating}
-              </div>
-            </div>
+        <BookingCard 
+          listing={listing}
+          checkIn={checkIn}
+          setCheckIn={setCheckIn}
+          checkOut={checkOut}
+          setCheckOut={setCheckOut}
+          guests={guests}
+          setGuests={setGuests}
+          onReserve={handleReserve}
+          nights={nights}
+          serviceFee={serviceFee}
+          total={total}
+        />
+      </div>
+    </main>
+  );
+}
 
-            <div className="booking-card__form">
-              <div className="booking-card__dates">
-                <div className="booking-card__field">
-                  <label htmlFor="detail-checkin">CHECK-IN</label>
-                  <input type="date" id="detail-checkin" className="form-input" value={checkIn} onChange={e => setCheckIn(e.target.value)} />
-                </div>
-                <div className="booking-card__field">
-                  <label htmlFor="detail-checkout">CHECK-OUT</label>
-                  <input type="date" id="detail-checkout" className="form-input" value={checkOut} onChange={e => setCheckOut(e.target.value)} />
-                </div>
-              </div>
-              <div className="booking-card__field">
-                <label htmlFor="detail-guests">GUESTS</label>
-                <select id="detail-guests" className="form-input" value={guests} onChange={e => setGuests(+e.target.value)}>
-                  {Array.from({ length: listing.guests }, (_, i) => i + 1).map(n => (
-                    <option key={n} value={n}>{n} guest{n > 1 ? 's' : ''}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+/* --- REUSABLE SUB-COMPONENTS --- */
 
-            <button className="btn btn--accent btn--lg booking-card__cta" onClick={handleReserve} id="reserve-btn">
-              Reserve Now
-            </button>
-            <p className="booking-card__note">You won't be charged yet</p>
+function RatingDisplay({ rating, reviewsCount, large = false }) {
+  return (
+    <span className={`detail-rating ${large ? 'detail-rating--lg' : ''}`}>
+      <svg width={large ? 18 : 14} height={large ? 18 : 14} viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+      </svg>
+      {rating} · {reviewsCount} reviews
+    </span>
+  );
+}
 
-            <div className="booking-card__breakdown">
-              <div className="booking-card__line">
-                <span>${listing.price} × {nights} night{nights > 1 ? 's' : ''}</span>
-                <span>${listing.price * nights}</span>
-              </div>
-              <div className="booking-card__line">
-                <span>Service fee</span>
-                <span>${serviceFee}</span>
-              </div>
-              <div className="booking-card__line booking-card__line--total">
-                <span>Total</span>
-                <span>${total}</span>
-              </div>
-            </div>
-          </div>
-        </aside>
+function HighlightItem({ icon, bold, text }) {
+  return (
+    <div className="detail-highlight">
+      <span className="detail-highlight__icon" aria-hidden="true">{icon}</span>
+      <div>
+        <strong>{bold}</strong>
+        <span> {text}</span>
       </div>
     </div>
+  );
+}
+
+function ReviewItem({ review }) {
+  return (
+    <div className="detail-review">
+      <div className="detail-review__header">
+        <span className="detail-review__avatar" aria-hidden="true">{review.avatar}</span>
+        <div>
+          <strong className="detail-review__user">{review.user}</strong>
+          <p className="detail-review__date">{review.date}</p>
+        </div>
+      </div>
+      <p className="detail-review__text">{review.text}</p>
+    </div>
+  );
+}
+
+function ListingNotFound() {
+  return (
+    <div className="container" style={{ padding: '120px 24px', textAlign: 'center' }}>
+      <h2>Listing not found</h2>
+      <Link to="/listings" className="btn btn--primary btn--md" style={{ marginTop: 24 }}>Browse Listings</Link>
+    </div>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+    </svg>
+  );
+}
+
+function HeartIcon({ filled }) {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? 'var(--color-error-500)' : 'none'} stroke={filled ? 'var(--color-error-500)' : 'currentColor'} strokeWidth="2">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
   );
 }

@@ -1,52 +1,40 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
-import { listings as staticListings } from '../data/listings';
+import { Link } from 'react-router-dom';
+import { useDashboard } from '../hooks/useDashboard';
+import BookingList from '../components/dashboard/BookingList';
+import FavoriteList from '../components/dashboard/FavoriteList';
+import MessageList from '../components/dashboard/MessageList';
+import ProfileSection from '../components/dashboard/ProfileSection';
 import './Dashboard.css';
 
+/**
+ * User Dashboard Page
+ * High-level orchestration of user data and tabbed navigation.
+ * 
+ * @page
+ * @returns {JSX.Element}
+ */
 export default function Dashboard() {
-  const { user, bookings, favorites, logout, addToast, ownerListings } = useApp();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('bookings');
-  const allListings = [...staticListings, ...ownerListings];
+  const {
+    user,
+    bookings,
+    favoriteListings,
+    tabs,
+    activeTab,
+    setActiveTab,
+    logout,
+    addToast
+  } = useDashboard();
 
-  if (!user) {
-    return (
-      <div className="dashboard-empty container animate-fade-in">
-        <div className="dashboard-empty__icon">🔐</div>
-        <h2>Please sign in</h2>
-        <p>You need to be logged in to access your dashboard.</p>
-        <Link to="/auth" className="btn btn--primary btn--lg">Sign In</Link>
-      </div>
-    );
-  }
-
-  if (user?.role === 'owner') {
-    return (
-      <div className="dashboard-empty container animate-fade-in">
-        <div className="dashboard-empty__icon">🏠</div>
-        <h2>You're logged in as a Host</h2>
-        <p>Head to your Owner Dashboard to manage your properties.</p>
-        <Link to="/owner-dashboard" className="btn btn--primary btn--lg">Go to Owner Dashboard</Link>
-      </div>
-    );
-  }
-
-  const favoriteListings = allListings.filter(l => favorites.includes(l.id));
-
-  const tabs = [
-    { id: 'bookings', label: '📋 Bookings', count: bookings.length },
-    { id: 'favorites', label: '❤️ Favorites', count: favoriteListings.length },
-    { id: 'messages', label: '💬 Messages', count: 3 },
-    { id: 'profile', label: '👤 Profile', count: null },
-  ];
+  // Guard Clauses for Authentication and Role
+  if (!user) return <AuthGuard />;
+  if (user?.role === 'owner') return <HostGuard />;
 
   return (
-    <div className="dashboard container">
-      {/* HEADER */}
-      <div className="dashboard__header animate-fade-in">
+    <main className="dashboard container">
+      {/* HEADER SECTION */}
+      <header className="dashboard__header animate-fade-in">
         <div className="dashboard__user">
-          <div className="dashboard__avatar">{user.avatar}</div>
+          <div className="dashboard__avatar" aria-hidden="true">{user.avatar}</div>
           <div>
             <h1 className="dashboard__greeting">Welcome back, {user.name}!</h1>
             <p className="dashboard__email">{user.email}</p>
@@ -56,30 +44,18 @@ export default function Dashboard() {
           <Link to="/listings" className="btn btn--secondary btn--sm">Browse Listings</Link>
           <button className="btn btn--ghost btn--sm" onClick={logout}>Log Out</button>
         </div>
-      </div>
+      </header>
 
-      {/* STATS */}
-      <div className="dashboard__stats animate-fade-in" style={{ animationDelay: '100ms' }}>
-        <div className="dash-stat">
-          <span className="dash-stat__number">{bookings.length}</span>
-          <span className="dash-stat__label">Bookings</span>
-        </div>
-        <div className="dash-stat">
-          <span className="dash-stat__number">{favoriteListings.length}</span>
-          <span className="dash-stat__label">Favorites</span>
-        </div>
-        <div className="dash-stat">
-          <span className="dash-stat__number">3</span>
-          <span className="dash-stat__label">Messages</span>
-        </div>
-        <div className="dash-stat">
-          <span className="dash-stat__number">4.9</span>
-          <span className="dash-stat__label">Rating</span>
-        </div>
-      </div>
+      {/* QUICK STATS */}
+      <section className="dashboard__stats animate-fade-in" style={{ animationDelay: '100ms' }}>
+        <StatCard value={bookings.length} label="Bookings" />
+        <StatCard value={favoriteListings.length} label="Favorites" />
+        <StatCard value="3" label="Messages" />
+        <StatCard value="4.9" label="Rating" />
+      </section>
 
-      {/* TABS */}
-      <div className="dashboard__tabs" role="tablist">
+      {/* NAVIGATION TABS */}
+      <nav className="dashboard__tabs" role="tablist">
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -87,128 +63,86 @@ export default function Dashboard() {
             onClick={() => setActiveTab(tab.id)}
             role="tab"
             aria-selected={activeTab === tab.id}
+            aria-controls={`panel-${tab.id}`}
             id={`tab-${tab.id}`}
           >
             {tab.label}
             {tab.count !== null && <span className="dashboard__tab-count">{tab.count}</span>}
           </button>
         ))}
-      </div>
+      </nav>
 
-      {/* TAB CONTENT */}
-      <div className="dashboard__content animate-fade-in" role="tabpanel">
-        {activeTab === 'bookings' && (
-          <div className="dashboard-bookings">
-            {bookings.length > 0 ? (
-              <div className="dashboard-bookings__list">
-                {bookings.map(booking => (
-                  <div key={booking.id} className="booking-item">
-                    <img src={booking.listingImage} alt={booking.listingTitle} className="booking-item__image" />
-                    <div className="booking-item__info">
-                      <h3 className="booking-item__title">{booking.listingTitle}</h3>
-                      <p className="booking-item__dates">
-                        {booking.checkIn || 'Flexible'} → {booking.checkOut || 'Flexible'}
-                      </p>
-                      <p className="booking-item__meta">
-                        {booking.guests} guest{booking.guests > 1 ? 's' : ''} · ${booking.total}
-                      </p>
-                    </div>
-                    <div className="booking-item__status">
-                      <span className={`status-badge status-badge--${booking.status}`}>
-                        {booking.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="dashboard-empty-tab">
-                <div className="dashboard-empty-tab__icon">📋</div>
-                <h3>No bookings yet</h3>
-                <p>Your upcoming trips will appear here once you make a reservation.</p>
-                <Link to="/listings" className="btn btn--primary btn--md">Explore Listings</Link>
-              </div>
-            )}
-          </div>
-        )}
+      {/* TAB CONTENT PANELS */}
+      <section 
+        className="dashboard__content animate-fade-in" 
+        role="tabpanel" 
+        id={`panel-${activeTab}`}
+        aria-labelledby={`tab-${activeTab}`}
+      >
+        <TabRenderer 
+          activeTab={activeTab} 
+          data={{ bookings, favoriteListings, user }} 
+          onUpdate={addToast} 
+        />
+      </section>
+    </main>
+  );
+}
 
-        {activeTab === 'favorites' && (
-          <div className="dashboard-favorites">
-            {favoriteListings.length > 0 ? (
-              <div className="dashboard-favorites__grid">
-                {favoriteListings.map(listing => (
-                  <Link key={listing.id} to={`/listing/${listing.id}`} className="fav-item">
-                    <img src={listing.images[0]} alt={listing.title} className="fav-item__image" />
-                    <div className="fav-item__info">
-                      <h3>{listing.title}</h3>
-                      <p>{listing.location}</p>
-                      <p className="fav-item__price">${listing.price}/night</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="dashboard-empty-tab">
-                <div className="dashboard-empty-tab__icon">❤️</div>
-                <h3>No favorites yet</h3>
-                <p>Save listings you love and they'll show up here.</p>
-                <Link to="/listings" className="btn btn--primary btn--md">Browse Listings</Link>
-              </div>
-            )}
-          </div>
-        )}
+/**
+ * Helper component to render the correct tab content
+ */
+function TabRenderer({ activeTab, data, onUpdate }) {
+  switch (activeTab) {
+    case 'bookings':
+      return <BookingList bookings={data.bookings} />;
+    case 'favorites':
+      return <FavoriteList listings={data.favoriteListings} />;
+    case 'messages':
+      return <MessageList />;
+    case 'profile':
+      return <ProfileSection user={data.user} onUpdate={onUpdate} />;
+    default:
+      return null;
+  }
+}
 
-        {activeTab === 'messages' && (
-          <div className="dashboard-messages">
-            {[
-              { from: 'Sarah Chen', avatar: '👩‍💼', message: 'Your booking is confirmed! Let me know if you need anything.', time: '2 hours ago', unread: true },
-              { from: 'Marcus Rivera', avatar: '👨‍🎨', message: 'Thanks for your interest! The villa is available for those dates.', time: '1 day ago', unread: true },
-              { from: 'xRentz Support', avatar: '🛡️', message: 'Welcome to xRentz! Check out our guide for new users.', time: '3 days ago', unread: false },
-            ].map((msg, i) => (
-              <div key={i} className={`message-item ${msg.unread ? 'message-item--unread' : ''}`}>
-                <div className="message-item__avatar">{msg.avatar}</div>
-                <div className="message-item__content">
-                  <div className="message-item__header">
-                    <strong>{msg.from}</strong>
-                    <span className="message-item__time">{msg.time}</span>
-                  </div>
-                  <p className="message-item__text">{msg.message}</p>
-                </div>
-                {msg.unread && <div className="message-item__dot" />}
-              </div>
-            ))}
-          </div>
-        )}
+/**
+ * Reusable Stat Card sub-component
+ */
+function StatCard({ value, label }) {
+  return (
+    <div className="dash-stat">
+      <span className="dash-stat__number">{value}</span>
+      <span className="dash-stat__label">{label}</span>
+    </div>
+  );
+}
 
-        {activeTab === 'profile' && (
-          <div className="dashboard-profile">
-            <div className="profile-section">
-              <h3 className="profile-section__title">Personal Info</h3>
-              <div className="profile-grid">
-                <div className="form-group">
-                  <label className="form-label">Full Name</label>
-                  <input type="text" className="form-input" defaultValue={user.name} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Email</label>
-                  <input type="email" className="form-input" defaultValue={user.email} />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Phone</label>
-                  <input type="tel" className="form-input" placeholder="+1 (555) 123-4567" />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Location</label>
-                  <input type="text" className="form-input" placeholder="City, Country" />
-                </div>
-              </div>
-              <button className="btn btn--primary btn--md" onClick={() => addToast('Profile updated!', 'success')} style={{ marginTop: 'var(--space-6)' }}>
-                Save Changes
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+/**
+ * Route Guard for Unauthenticated Users
+ */
+function AuthGuard() {
+  return (
+    <div className="dashboard-empty container animate-fade-in">
+      <div className="dashboard-empty__icon">🔐</div>
+      <h2>Please sign in</h2>
+      <p>You need to be logged in to access your dashboard.</p>
+      <Link to="/auth" className="btn btn--primary btn--lg">Sign In</Link>
+    </div>
+  );
+}
+
+/**
+ * Route Guard for Host Users in Renter Dashboard
+ */
+function HostGuard() {
+  return (
+    <div className="dashboard-empty container animate-fade-in">
+      <div className="dashboard-empty__icon">🏠</div>
+      <h2>You're logged in as a Host</h2>
+      <p>Head to your Owner Dashboard to manage your properties.</p>
+      <Link to="/owner-dashboard" className="btn btn--primary btn--lg">Go to Owner Dashboard</Link>
     </div>
   );
 }
