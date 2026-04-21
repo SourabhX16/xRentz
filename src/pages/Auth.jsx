@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import Logo from './Logo';
+import Logo from '../components/Logo';
 import './Auth.css';
 
 export default function Auth() {
