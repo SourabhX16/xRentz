@@ -70,64 +70,8 @@ export async function queryGeminiForVibeMatch(userMessage, listings, conversatio
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   
   if (!apiKey || apiKey === 'your_gemini_api_key_here') {
-    return queryNoLoginAI(userMessage, listings, conversationHistory);
+    return getSmartInternalResponse(userMessage, listings);
   }
-
-/**
- * Super-smart fallback using Pollinations AI (No Key / No Login required)
- */
-async function queryNoLoginAI(userMessage, listings, conversationHistory) {
-  const systemPrompt = buildSystemPrompt(listings);
-  const historyText = conversationHistory.slice(-4).map(m => `${m.type === 'user' ? 'User' : 'Guru'}: ${m.text}`).join('\n');
-  const fullPrompt = `System: ${systemPrompt}\n\nHistory:\n${historyText}\n\nUser: ${userMessage}\n\nAssistant (respond in user's language):`;
-  
-  try {
-    // Use a cleaner endpoint with a refined model parameter
-    const cleanPrompt = `Answer as xRentz Guru (Hinglish/User's Lang). 
-    xRentz Features: Visit Planner, AI Discovery, Market Comparison.
-    User said: ${userMessage}`;
-
-    const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(cleanPrompt)}?model=openai`);
-    const text = await response.text();
-    
-    if (!text) throw new Error("Empty AI response");
-
-    // AGGRESSIVE CLEANER: Completely block the notice and any meta-text
-    if (text.includes('IMPORTANT NOTICE') || text.includes('pollinations.ai') || text.includes('migrate')) {
-        // If we still get a notice, it's a platform issue. Use a smart fallback message that feels like AI
-        return {
-            detectedLanguage: 'Auto',
-            response: `Bhai, xRentz Guru yahan hai! 🤵 Aapne jo pucha wo main samajh gaya. xRentz ek next-gen rental marketplace hai jisme AI-powered search aur smart visit planning milti hai. Aap hamari listings check kariye, main aapko best stay dhundne mein help karunga!`,
-            matches: [],
-            suggestedFollowUps: ['🏖️ View Listings', '🏠 About xRentz'],
-            isAI: true
-        };
-    }
-
-    let responseText = text.replace(/^(Guru|Assistant|AI|System):\s*/i, '').trim();
-
-    return {
-      detectedLanguage: 'Auto',
-      response: responseText,
-      matches: [],
-      suggestedFollowUps: ['🏖️ Beach vibes', '🏠 About xRentz', '🤵 Help me book'],
-      isAI: true,
-    };
-
-
-  } catch (err) {
-    console.error('No-Login AI failed:', err);
-    return {
-      detectedLanguage: 'English',
-      response: "I'm having a small connection hiccup, but I'm still here! How can I help you find a stay? 🤵",
-      matches: [],
-      suggestedFollowUps: ['🏖️ Beach vibes', '🏔️ Mountain escape'],
-      isAI: true
-    };
-  }
-}
-
-
 
   const systemPrompt = buildSystemPrompt(listings);
 
@@ -221,6 +165,79 @@ async function queryNoLoginAI(userMessage, listings, conversationHistory) {
     console.error('Gemini service error:', err);
     return getFallbackResponse(userMessage, listings);
   }
+}
+
+/**
+ * xRentz "Smart Internal Engine" — 100% Reliable, Keyless, and Fast.
+ * Performs intelligent vibe matching and language detection locally.
+ */
+function getSmartInternalResponse(userMessage, listings) {
+  const msg = userMessage.toLowerCase();
+  
+  // 1. Detect Language & Context
+  const isHindi = /नमस्ते|हैलो|भाई|कहाँ|बताओ|क्या|dhundo|kaha|hai/.test(msg);
+  const isSpanish = /hola|donde|buscar|playa|casa/.test(msg);
+  
+  // 2. Vibe Mapping Dictionary
+  const vibes = [
+    { id: 'beach', keywords: ['beach', 'ocean', 'sea', 'water', 'surf', 'beachfront', 'playa', 'समुद्र', 'गोआ', 'beach'], response: isHindi ? 'ये रहे आपके लिए शानदार बीच-साइड व्यू वाले घर!' : 'I found some amazing beachfront properties for your vibe! 🏖️' },
+    { id: 'mountain', keywords: ['mountain', 'snow', 'cold', 'cabin', 'hiking', 'trek', 'pahar', 'बर्फ', 'पहाड़'], response: isHindi ? 'पहाड़ों की शांति के लिए ये शानदार कैबिन्स चेक करें!' : 'Check out these cozy mountain escapes for your adventure! 🏔️' },
+    { id: 'luxury', keywords: ['luxury', 'premium', 'high end', 'expensive', 'pool', 'penthouse', 'लक्ज़री', 'vıp'], response: isHindi ? 'यहाँ कुछ सबसे प्रीमियम और लक्ज़री ऑप्शंस हैं!' : 'Indulge in these ultra-luxury properties curated for you! 💎' },
+    { id: 'city', keywords: ['city', 'downtown', 'urban', 'nightlife', 'market', 'शहर', 'city'], response: isHindi ? 'शहर की चकाचौंध के बीच ये बेस्ट लोकेशन्स हैं!' : 'Live in the heart of the action with these city picks! 🏙️' }
+  ];
+
+  // 3. Find the best matching vibe
+  let matchedVibe = vibes.find(v => v.keywords.some(k => msg.includes(k)));
+  
+  // 4. Perform Scoring Logic
+  let matches = listings.map(l => {
+    let score = 0;
+    const text = (l.title + l.description + l.location + l.category).toLowerCase();
+    
+    // Exact location match?
+    if (msg.includes(l.location.toLowerCase())) score += 60;
+    
+    // Vibe match?
+    if (matchedVibe && (text.includes(matchedVibe.id) || matchedVibe.keywords.some(k => text.includes(k)))) {
+        score += 30;
+    }
+
+    // Amenity match?
+    if (msg.includes('pool') && l.amenities.includes('Pool')) score += 10;
+    if (msg.includes('wifi') && l.amenities.includes('Fast WiFi')) score += 10;
+    
+    // Bonus for superhosts/rating
+    if (l.superhost) score += 5;
+    if (l.rating > 4.8) score += 5;
+
+    return { 
+        id: l.id, 
+        vibeScore: Math.min(99, score > 0 ? score : 30 + Math.random() * 20), 
+        listing: l,
+        reason: isHindi ? 'आपकी वाइट के साथ परफेक्ट मैच!' : 'Matches your desired atmosphere perfectly!'
+    };
+  });
+
+  // 5. Filter and Sort
+  matches = matches
+    .filter(m => m.vibeScore > 40 || (matchedVibe && m.vibeScore > 30))
+    .sort((a, b) => b.vibeScore - a.vibeScore)
+    .slice(0, 3);
+
+  // 6. Generate Conversational Response
+  let responseText = matchedVibe ? matchedVibe.response : (isHindi ? 'नमस्ते! मैं xRentz गुरु हूँ। मुझे बताएं कि आप किस तरह का घर ढूंढ रहे हैं? (बीच, पहाड़, या लक्ज़री)' : "Hello! I'm xRentz Guru. Tell me your vibe (Beach, Mountain, Luxury) and I'll find your perfect stay!");
+
+  if (matches.length === 0) {
+    responseText = isHindi ? 'माफ़ कीजिये, मुझे अभी आपके लिए कुछ नहीं मिला। क्या आप "बीच" या "लक्ज़री" ट्राई करना चाहेंगे?' : "I couldn't find an exact match. Try describing a vibe like 'Beach fronts' or 'Luxury villas'!";
+  }
+
+  return {
+    detectedLanguage: isHindi ? 'Hindi/Hinglish' : (isSpanish ? 'Spanish' : 'English'),
+    response: responseText,
+    matches: matches,
+    suggestedFollowUps: isHindi ? ['🏖️ बीच वाइब्स', '🏔️ पहाड़ों में', '💎 लक्ज़री स्टे'] : ['🏖️ Beach vibes', '🏔️ Mountain escape', '💎 Luxury stay'],
+    isAI: false
+  };
 }
 
 /**
