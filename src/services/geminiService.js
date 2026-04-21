@@ -85,32 +85,37 @@ async function queryNoLoginAI(userMessage, listings, conversationHistory) {
   const fullPrompt = `${systemPrompt}\n\nExisting Conversation:\n${historyText}\n\nUser Message: ${userMessage}`;
   
   try {
-    const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}?json=true`);
+    const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(fullPrompt + "\nIMPORTANT: Return ONLY JSON format.")}?json=true`);
     const data = await response.json();
     
-    // Pollinations might return a direct string or JSON if requested
-    // We try to parse it to match our format
     let result = data;
-    if (typeof data === 'string') {
-        try {
-            // Try to find JSON in the string
-            const jsonMatch = data.match(/\{[\s\S]*\}/);
-            if (jsonMatch) result = JSON.parse(jsonMatch[0]);
-        } catch (e) {
-            return getFallbackResponse(userMessage, listings);
+    
+    // If the tool returns a string that isn't valid JSON, we'll wrap it
+    if (typeof result === 'string') {
+      try {
+        const jsonMatch = result.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          result = JSON.parse(jsonMatch[0]);
+        } else {
+          // Wrap plain text as a valid response
+          result = { response: result, matches: [], suggestedFollowUps: ['🏖️ Beach vibes', '🏔️ Mountain escape'] };
         }
+      } catch (e) {
+        result = { response: result, matches: [], suggestedFollowUps: ['🏖️ Beach vibes'] };
+      }
     }
 
     return {
       detectedLanguage: result.detectedLanguage || 'English',
-      response: result.response || "I'm here to help!",
+      response: result.response || result.text || (typeof result === 'string' ? result : "Hello! How can I help you today?"),
       matches: (result.matches || []).map(m => ({
         ...m,
         listing: listings.find(l => l.id === m.id)
       })),
-      suggestedFollowUps: result.suggestedFollowUps || [],
+      suggestedFollowUps: result.suggestedFollowUps || ['🏖️ Beach vibes', '🏔️ Mountain escape'],
       isAI: true,
     };
+
   } catch (err) {
     console.error('No-Login AI failed:', err);
     return getFallbackResponse(userMessage, listings);
