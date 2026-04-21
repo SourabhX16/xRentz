@@ -40,10 +40,10 @@ export default function Footer() {
 
           <div className="footer__col">
             <h4 className="footer__heading">Support</h4>
-            <a href="#" className="footer__link">Help Center</a>
+            <Link to="/help" className="footer__link">Help Center</Link>
             <a href="#" className="footer__link">Safety Info</a>
-            <a href="#" className="footer__link">Cancellation Policy</a>
-            <a href="#" className="footer__link">Contact Us</a>
+            <Link to="/cancellation" className="footer__link">Cancellation Policy</Link>
+            <Link to="/contact" className="footer__link">Contact Us</Link>
           </div>
         </div>
 
