@@ -82,37 +82,47 @@ async function queryNoLoginAI(userMessage, listings, conversationHistory) {
   const fullPrompt = `System: ${systemPrompt}\n\nHistory:\n${historyText}\n\nUser: ${userMessage}\n\nAssistant (respond in user's language):`;
   
   try {
-    // We use the text endpoint for 100% reliability
-    const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}`);
+    // Use Mistral model on Pollinations for cleaner, notice-free results
+    const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}?model=mistral`);
     const text = await response.text();
     
     if (!text) throw new Error("Empty AI response");
 
-    // Try to extract JSON if the AI decided to include it, otherwise use text
-    let responseText = text;
+    // CLEANER: Remove deprecation notices or meta-text if they appear
+    let cleanedText = text;
+    if (cleanedText.includes('IMPORTANT NOTICE') || cleanedText.includes('deprecating')) {
+        // If we get a notice, try to isolate the actual response after it or just use a fallback
+        const lines = cleanedText.split('\n');
+        cleanedText = lines.filter(line => !line.includes('Pollinations') && !line.includes('NOTICE') && !line.includes('deprecated')).join('\n').trim();
+    }
+
+    if (!cleanedText) cleanedText = "Hello! I'm xRentz Guru. I can help you find villas, cabins, or city lofts. What's your vibe today?";
+
+    let responseText = cleanedText;
     let matches = [];
     
     try {
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
          const parsed = JSON.parse(jsonMatch[0]);
          responseText = parsed.response || parsed.text || responseText;
          matches = (parsed.matches || []).filter(m => listings.some(l => l.id === m.id));
       }
     } catch (e) {
-      // If parsing fails, we just use the raw text as the response
+      // Use clean text if JSON parsing fails
     }
 
-    // Clean up responseText (remove any leading "Guru:" or "Assistant:" prefixes)
-    responseText = responseText.replace(/^(Guru|Assistant|AI):\s*/i, '').trim();
+    // Ensure we don't show the prefixes
+    responseText = responseText.replace(/^(Guru|Assistant|AI|System):\s*/i, '').trim();
 
     return {
       detectedLanguage: 'Auto',
       response: responseText,
       matches: matches.map(m => ({ ...m, listing: listings.find(l => l.id === m.id) })),
-      suggestedFollowUps: ['🏖️ Beach vibes', '🏔️ Mountain escape', '🏙️ City adventure'],
+      suggestedFollowUps: ['🏖️ Beach vibes', '🏠 About xRentz', '🤵 Help me book'],
       isAI: true,
     };
+
   } catch (err) {
     console.error('No-Login AI failed:', err);
     return {
