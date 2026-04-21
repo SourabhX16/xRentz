@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import Logo from './Logo';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -36,12 +37,7 @@ export default function Navbar() {
     <nav className={`navbar ${scrolled ? 'navbar--scrolled' : ''} ${isHome && !scrolled ? 'navbar--transparent' : ''}`} role="navigation" aria-label="Main navigation">
       <div className="navbar__inner container">
         <Link to="/" className="navbar__logo" id="navbar-logo" aria-label="xRentz Home">
-          <div className="navbar__logo-icon">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <rect width="28" height="28" rx="8" fill="var(--color-primary-500)"/>
-              <path d="M7 7L14 14M14 14L21 7M14 14L7 21M14 14L21 21" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-            </svg>
-          </div>
+          <Logo size={32} />
           <span className="navbar__logo-text">xRentz</span>
         </Link>
 

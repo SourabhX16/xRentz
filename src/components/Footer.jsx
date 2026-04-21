@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import Logo from './Logo';
 import './Footer.css';
 
 export default function Footer() {
@@ -8,10 +9,7 @@ export default function Footer() {
         <div className="footer__grid">
           <div className="footer__brand">
             <Link to="/" className="footer__logo" aria-label="xRentz Home">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <rect width="28" height="28" rx="8" fill="var(--color-primary-500)"/>
-                <path d="M7 7L14 14M14 14L21 7M14 14L7 21M14 14L21 21" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-              </svg>
+              <Logo size={28} />
               <span>xRentz</span>
             </Link>
             <p className="footer__tagline">Find your perfect stay, anywhere in the world.</p>

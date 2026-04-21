@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import Logo from './Logo';
 import './Auth.css';
 
 export default function Auth() {
@@ -67,10 +68,7 @@ export default function Auth() {
       <div className={`auth-page__left ${role === 'owner' ? 'auth-page__left--owner' : ''}`}>
         <div className="auth-page__brand">
           <Link to="/" className="auth-page__logo">
-            <svg width="32" height="32" viewBox="0 0 28 28" fill="none">
-              <rect width="28" height="28" rx="8" fill="var(--color-primary-500)"/>
-              <path d="M7 7L14 14M14 14L21 7M14 14L7 21M14 14L21 21" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
-            </svg>
+            <Logo size={32} />
             xRentz
           </Link>
         </div>
