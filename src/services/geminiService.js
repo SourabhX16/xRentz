@@ -78,49 +78,53 @@ export async function queryGeminiForVibeMatch(userMessage, listings, conversatio
  */
 async function queryNoLoginAI(userMessage, listings, conversationHistory) {
   const systemPrompt = buildSystemPrompt(listings);
-  
-  // Format history for a simple chat prompt
-  const historyText = conversationHistory.map(m => `${m.type === 'user' ? 'User' : 'Guru'}: ${m.text}`).join('\n');
-  
-  const fullPrompt = `${systemPrompt}\n\nExisting Conversation:\n${historyText}\n\nUser Message: ${userMessage}`;
+  const historyText = conversationHistory.slice(-4).map(m => `${m.type === 'user' ? 'User' : 'Guru'}: ${m.text}`).join('\n');
+  const fullPrompt = `System: ${systemPrompt}\n\nHistory:\n${historyText}\n\nUser: ${userMessage}\n\nAssistant (respond in user's language):`;
   
   try {
-    const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(fullPrompt + "\nIMPORTANT: Return ONLY JSON format.")}?json=true`);
-    const data = await response.json();
+    // We use the text endpoint for 100% reliability
+    const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}`);
+    const text = await response.text();
     
-    let result = data;
+    if (!text) throw new Error("Empty AI response");
+
+    // Try to extract JSON if the AI decided to include it, otherwise use text
+    let responseText = text;
+    let matches = [];
     
-    // If the tool returns a string that isn't valid JSON, we'll wrap it
-    if (typeof result === 'string') {
-      try {
-        const jsonMatch = result.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          result = JSON.parse(jsonMatch[0]);
-        } else {
-          // Wrap plain text as a valid response
-          result = { response: result, matches: [], suggestedFollowUps: ['🏖️ Beach vibes', '🏔️ Mountain escape'] };
-        }
-      } catch (e) {
-        result = { response: result, matches: [], suggestedFollowUps: ['🏖️ Beach vibes'] };
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+         const parsed = JSON.parse(jsonMatch[0]);
+         responseText = parsed.response || parsed.text || responseText;
+         matches = (parsed.matches || []).filter(m => listings.some(l => l.id === m.id));
       }
+    } catch (e) {
+      // If parsing fails, we just use the raw text as the response
     }
 
+    // Clean up responseText (remove any leading "Guru:" or "Assistant:" prefixes)
+    responseText = responseText.replace(/^(Guru|Assistant|AI):\s*/i, '').trim();
+
     return {
-      detectedLanguage: result.detectedLanguage || 'English',
-      response: result.response || result.text || (typeof result === 'string' ? result : "Hello! How can I help you today?"),
-      matches: (result.matches || []).map(m => ({
-        ...m,
-        listing: listings.find(l => l.id === m.id)
-      })),
-      suggestedFollowUps: result.suggestedFollowUps || ['🏖️ Beach vibes', '🏔️ Mountain escape'],
+      detectedLanguage: 'Auto',
+      response: responseText,
+      matches: matches.map(m => ({ ...m, listing: listings.find(l => l.id === m.id) })),
+      suggestedFollowUps: ['🏖️ Beach vibes', '🏔️ Mountain escape', '🏙️ City adventure'],
       isAI: true,
     };
-
   } catch (err) {
     console.error('No-Login AI failed:', err);
-    return getFallbackResponse(userMessage, listings);
+    return {
+      detectedLanguage: 'English',
+      response: "I'm having a small connection hiccup, but I'm still here! How can I help you find a stay? 🤵",
+      matches: [],
+      suggestedFollowUps: ['🏖️ Beach vibes', '🏔️ Mountain escape'],
+      isAI: true
+    };
   }
 }
+
 
 
   const systemPrompt = buildSystemPrompt(listings);
