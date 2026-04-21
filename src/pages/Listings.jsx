@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -19,12 +19,24 @@ L.Icon.Default.mergeOptions({
 
 export default function Listings() {
   const [searchParams] = useSearchParams();
-  const { searchFilters, setSearchFilters, ownerListings } = useApp();
+  const { searchFilters, setSearchFilters, ownerListings, formatPrice, t } = useApp();
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [selectedAmenities, setSelectedAmenities] = useState([]);
   const [sortBy, setSortBy] = useState('recommended');
   const [viewMode, setViewMode] = useState('grid');
+  useEffect(() => {
+    const params = Object.fromEntries(searchParams.entries());
+    let updates = {};
+    if (params.location && params.location !== searchFilters.location) updates.location = params.location;
+    if (params.checkIn && params.checkIn !== searchFilters.checkIn) updates.checkIn = params.checkIn;
+    if (params.checkOut && params.checkOut !== searchFilters.checkOut) updates.checkOut = params.checkOut;
+    if (params.guests && parseInt(params.guests) !== searchFilters.guests) updates.guests = parseInt(params.guests);
+
+    if (Object.keys(updates).length > 0) {
+      setSearchFilters(prev => ({ ...prev, ...updates }));
+    }
+  }, [searchParams, setSearchFilters, searchFilters]);
 
   const categoryParam = searchParams.get('category') || 'all';
 
@@ -90,7 +102,7 @@ export default function Listings() {
                 ? categories.find(c => c.id === categoryParam)?.label || 'All'
                 : 'All Rentals'}
             </h1>
-            <span className="listings-toolbar__count">{filtered.length} places</span>
+            <span className="listings-toolbar__count">{filtered.length} {t('common.places') || 'places'}</span>
           </div>
           <div className="listings-toolbar__right">
             <button
@@ -221,8 +233,8 @@ export default function Listings() {
                         <img src={listing.images[0]} alt={listing.title} style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '8px 8px 0 0' }} />
                         <div style={{ padding: '8px' }}>
                           <h4 style={{ margin: '0 0 4px', fontSize: '14px' }}>{listing.title}</h4>
-                          <p style={{ margin: '0 0 8px', fontWeight: 'bold' }}>${listing.price} / night</p>
-                          <a href={`/listing/${listing.id}`} className="btn btn--primary btn--sm" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>View Property</a>
+                          <p style={{ margin: '0 0 8px', fontWeight: 'bold' }}>{formatPrice(listing.price)} / {t('common.night')}</p>
+                          <a href={`/listing/${listing.id}`} className="btn btn--primary btn--sm" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>{t('common.view_property') || 'View Property'}</a>
                         </div>
                       </div>
                     </Popup>

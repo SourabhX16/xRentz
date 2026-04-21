@@ -8,8 +8,7 @@ export default function Auth() {
   const navigate = useNavigate();
   const { login, user } = useApp();
   const [role, setRole] = useState(searchParams.get('role') === 'owner' ? 'owner' : 'user');
-  const [isSignup, setIsSignup] = useState(searchParams.get('mode') === 'signup');
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', confirmPassword: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -26,12 +25,10 @@ export default function Auth() {
 
   const validate = () => {
     const newErrors = {};
-    if (isSignup && !formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Enter a valid email';
     if (!formData.password) newErrors.password = 'Password is required';
     else if (formData.password.length < 6) newErrors.password = 'At least 6 characters';
-    if (isSignup && formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords don\'t match';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -42,7 +39,7 @@ export default function Auth() {
     setLoading(true);
     await new Promise(r => setTimeout(r, 1200));
     login({
-      name: isSignup ? formData.name : formData.email.split('@')[0],
+      name: formData.name || formData.email.split('@')[0],
       email: formData.email,
       avatar: role === 'owner' ? '🏠' : '😊',
       role: role,
@@ -143,14 +140,12 @@ export default function Auth() {
 
           <div className="auth-card__header">
             <h2 className="auth-card__title">
-              {isSignup
-                ? (role === 'owner' ? 'Create Host Account' : 'Create your account')
-                : (role === 'owner' ? 'Host Sign In' : 'Welcome back')}
+              {role === 'owner' ? 'Host Center' : 'Access xRentz'}
             </h2>
             <p className="auth-card__subtitle">
-              {isSignup
-                ? (role === 'owner' ? 'Start hosting with xRentz' : 'Start your journey with xRentz')
-                : (role === 'owner' ? 'Sign in to manage your properties' : 'Sign in to continue to xRentz')}
+              {role === 'owner' 
+                ? 'Sign in or create a host account to manage properties' 
+                : 'Enter your details below to continue your journey'}
             </p>
           </div>
 
@@ -172,21 +167,19 @@ export default function Auth() {
 
           {/* Form */}
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
-            {isSignup && (
-              <div className="form-group">
-                <label htmlFor="auth-name" className="form-label">Full Name</label>
-                <input
-                  id="auth-name"
-                  type="text"
-                  className={`form-input ${errors.name ? 'form-input--error' : ''}`}
-                  value={formData.name}
-                  onChange={e => updateField('name', e.target.value)}
-                  placeholder={role === 'owner' ? 'Property Owner Name' : 'John Doe'}
-                  autoComplete="name"
-                />
-                {errors.name && <p className="form-error">{errors.name}</p>}
-              </div>
-            )}
+            <div className="form-group">
+              <label htmlFor="auth-name" className="form-label">Full Name (New Users)</label>
+              <input
+                id="auth-name"
+                type="text"
+                className={`form-input ${errors.name ? 'form-input--error' : ''}`}
+                value={formData.name}
+                onChange={e => updateField('name', e.target.value)}
+                placeholder={role === 'owner' ? 'Property Owner Name' : 'John Doe'}
+                autoComplete="name"
+              />
+              {errors.name && <p className="form-error">{errors.name}</p>}
+            </div>
             <div className="form-group">
               <label htmlFor="auth-email" className="form-label">Email</label>
               <input
@@ -209,25 +202,10 @@ export default function Auth() {
                 value={formData.password}
                 onChange={e => updateField('password', e.target.value)}
                 placeholder="••••••••"
-                autoComplete={isSignup ? 'new-password' : 'current-password'}
+                autoComplete="current-password"
               />
               {errors.password && <p className="form-error">{errors.password}</p>}
             </div>
-            {isSignup && (
-              <div className="form-group">
-                <label htmlFor="auth-confirm" className="form-label">Confirm Password</label>
-                <input
-                  id="auth-confirm"
-                  type="password"
-                  className={`form-input ${errors.confirmPassword ? 'form-input--error' : ''}`}
-                  value={formData.confirmPassword}
-                  onChange={e => updateField('confirmPassword', e.target.value)}
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                />
-                {errors.confirmPassword && <p className="form-error">{errors.confirmPassword}</p>}
-              </div>
-            )}
             <button
               type="submit"
               className={`btn btn--lg auth-submit ${role === 'owner' ? 'btn--accent' : 'btn--primary'}`}
@@ -236,17 +214,12 @@ export default function Auth() {
             >
               {loading ? (
                 <span className="auth-spinner" />
-              ) : isSignup
-                  ? (role === 'owner' ? '🏠 Create Host Account' : 'Create Account')
-                  : (role === 'owner' ? '🏠 Sign In as Host' : 'Sign In')}
+              ) : 'Continue to xRentz'}
             </button>
           </form>
 
           <p className="auth-switch">
-            {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
-            <button className="auth-switch__btn" onClick={() => { setIsSignup(!isSignup); setErrors({}); }}>
-              {isSignup ? 'Sign In' : 'Sign Up'}
-            </button>
+             Secure payment and trusted profiles included.
           </p>
         </div>
       </div>

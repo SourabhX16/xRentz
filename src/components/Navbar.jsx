@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import './Navbar.css';
 
 export default function Navbar() {
-  const { user, logout, theme, setTheme } = useApp();
+  const { user, logout, theme, setTheme, language, setLanguage, currency, setCurrency, currenciesList, t } = useApp();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -61,6 +61,21 @@ export default function Navbar() {
             {theme === 'dark' && '🌙'}
             {theme === 'neon' && '✨'}
           </button>
+
+          <div className="navbar__i18n">
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="nav-select">
+              <option value="en">🇺🇸 EN</option>
+              <option value="hi">🇮🇳 HI</option>
+              <option value="es">🇪🇸 ES</option>
+              <option value="fr">🇫🇷 FR</option>
+              <option value="de">🇩🇪 DE</option>
+            </select>
+            <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="nav-select">
+              {Object.keys(currenciesList).map(code => (
+                <option key={code} value={code}>{code}</option>
+              ))}
+            </select>
+          </div>
 
           {user ? (
             <div className="navbar__profile-wrap">
@@ -130,16 +145,30 @@ export default function Navbar() {
         {user ? (
           <>
             <Link to={dashboardPath} className="navbar__mobile-link" role="menuitem">
-              {isOwner ? '🏠 My Properties' : 'Dashboard'}
+              {isOwner ? '🏠 My Properties' : t('nav.dashboard')}
             </Link>
             <button className="navbar__mobile-link navbar__mobile-link--danger" onClick={logout} role="menuitem">Log Out</button>
           </>
         ) : (
           <>
-            <Link to="/auth" className="navbar__mobile-link" role="menuitem">Log In</Link>
+            <Link to="/auth" className="navbar__mobile-link" role="menuitem">{t('nav.login')}</Link>
             <Link to="/auth?mode=signup" className="navbar__mobile-link navbar__mobile-link--accent" role="menuitem">Sign Up Free</Link>
           </>
         )}
+        <div style={{ padding: '16px', display: 'flex', gap: '8px' }}>
+          <select value={language} onChange={(e) => setLanguage(e.target.value)} className="nav-select" style={{ flex: 1 }}>
+            <option value="en">🇺🇸 English</option>
+            <option value="hi">🇮🇳 Hindi</option>
+            <option value="es">🇪🇸 Spanish</option>
+            <option value="fr">🇫🇷 French</option>
+            <option value="de">🇩🇪 German</option>
+          </select>
+          <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="nav-select" style={{ flex: 1 }}>
+            {Object.keys(currenciesList).map(code => (
+              <option key={code} value={code}>{code}</option>
+            ))}
+          </select>
+        </div>
       </div>
     </nav>
   );

@@ -143,6 +143,48 @@
   color: #fff;
 }
 
+.navbar__i18n {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.nav-select {
+  background: var(--color-neutral-100);
+  border: 1px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: var(--fw-semi);
+  color: var(--color-neutral-700);
+  cursor: pointer;
+  outline: none;
+  transition: all var(--duration-normal);
+}
+
+.nav-select:hover {
+  background: var(--color-neutral-200);
+  border-color: var(--color-neutral-300);
+}
+
+.navbar--transparent .nav-select {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.navbar--transparent .nav-select option {
+  background: var(--color-neutral-900);
+  color: #fff;
+}
+
+[data-theme="dark"] .nav-select,
+[data-theme="neon"] .nav-select {
+  background: var(--color-neutral-800);
+  border-color: var(--color-neutral-700);
+  color: var(--color-neutral-100);
+}
+
 /* ─── BUTTONS (GLOBAL) ─── */
 .btn {
   display: inline-flex;

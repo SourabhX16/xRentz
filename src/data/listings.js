@@ -39,6 +39,9 @@ export const listings = [
     description: 'Wake up to breathtaking skyline views from this modern loft in the heart of Manhattan. Floor-to-ceiling windows flood the space with natural light, and the open layout is perfect for both work and relaxation.',
     lat: 40.7580,
     lng: -73.9855,
+    minNights: 2,
+    instantBook: true,
+    vibeProfile: { energy: 85, chill: 20, luxury: 95, nature: 10 }
   },
   {
     id: 2,
@@ -62,6 +65,9 @@ export const listings = [
     description: 'Escape to paradise in this stunning beachfront villa. Steps from the ocean with a private pool, outdoor kitchen, and unobstructed sunset views. The perfect retreat for families or groups.',
     lat: 34.0259,
     lng: -118.7798,
+    minNights: 3,
+    instantBook: false,
+    vibeProfile: { energy: 40, chill: 90, luxury: 85, nature: 70 }
   },
   {
     id: 3,
@@ -85,6 +91,9 @@ export const listings = [
     description: 'Nestled among the aspens with ski-in/ski-out access. Relax in the private hot tub under the stars after a day on the slopes. Rustic charm meets modern comfort.',
     lat: 39.1911,
     lng: -106.8175,
+    minNights: 1,
+    instantBook: true,
+    vibeProfile: { energy: 60, chill: 95, luxury: 30, nature: 98 }
   },
   {
     id: 4,

@@ -16,7 +16,7 @@ const HERO_BACKGROUNDS = [
 ];
 
 export default function Home() {
-  const { ownerListings } = useApp();
+  const { ownerListings, t } = useApp();
   const allListings = [...staticListings, ...ownerListings];
   const featured = allListings.filter(l => l.superhost).slice(0, 4);
   const trending = allListings.slice(0, 8);
@@ -69,11 +69,10 @@ export default function Home() {
         </div>
         <div className="hero__content container">
           <h1 className="hero__title animate-fade-in-up">
-            Your next stay,<br />
-            <span className="hero__title-accent">effortlessly found.</span>
+            {t('hero.title')}
           </h1>
           <p className="hero__subtitle animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-            Discover curated rentals with trusted hosts — from city apartments to mountain cabins.
+            {t('hero.subtitle')}
           </p>
           <div className="hero__search animate-fade-in-up" style={{ animationDelay: '200ms' }}>
             <SearchBar variant="hero" />
@@ -100,8 +99,8 @@ export default function Home() {
       {/* CATEGORIES */}
       <section className="section container" id="categories-section">
         <div className="section__header">
-          <h2 className="section__title">Browse by Category</h2>
-          <p className="section__subtitle">Find exactly what you're looking for</p>
+          <h2 className="section__title">{t('home.categories')}</h2>
+          <p className="section__subtitle">{t('home.categories_sub') || 'Find exactly what you\'re looking for'}</p>
         </div>
         <div className="categories-scroll">
           {categories.map(cat => (
@@ -112,7 +111,7 @@ export default function Home() {
               id={`category-${cat.id}`}
             >
               <span className="category-chip__icon">{cat.icon}</span>
-              <span className="category-chip__label">{cat.label}</span>
+              <span className="category-chip__label">{t(`cat.${cat.id}`) !== `cat.${cat.id}` ? t(`cat.${cat.id}`) : cat.label}</span>
             </Link>
           ))}
         </div>
@@ -122,8 +121,8 @@ export default function Home() {
       <section className="section container" id="featured-section">
         <div className="section__header">
           <div>
-            <h2 className="section__title">Featured Stays</h2>
-            <p className="section__subtitle">Handpicked by our community of travelers</p>
+            <h2 className="section__title">{t('home.featured')}</h2>
+            <p className="section__subtitle">{t('home.featured_sub') || 'Handpicked by our community of travelers'}</p>
           </div>
           <Link to="/listings" className="btn btn--secondary btn--sm">View All →</Link>
         </div>
@@ -168,8 +167,8 @@ export default function Home() {
       <section className="section container" id="trending-section">
         <div className="section__header">
           <div>
-            <h2 className="section__title">Trending Near You</h2>
-            <p className="section__subtitle">Places guests are loving right now</p>
+            <h2 className="section__title">{t('home.trending')}</h2>
+            <p className="section__subtitle">{t('home.trending_sub') || 'Places guests are loving right now'}</p>
           </div>
           <Link to="/listings" className="btn btn--secondary btn--sm">See More →</Link>
         </div>
@@ -185,8 +184,8 @@ export default function Home() {
         <section className="section container" id="newly-listed-section">
           <div className="section__header">
             <div>
-              <h2 className="section__title">🆕 Newly Listed</h2>
-              <p className="section__subtitle">Fresh properties just added by hosts</p>
+              <h2 className="section__title">🆕 {t('home.newly_listed')}</h2>
+              <p className="section__subtitle">{t('home.newly_listed_sub') || 'Fresh properties just added by hosts'}</p>
             </div>
             <Link to="/listings" className="btn btn--secondary btn--sm">View All →</Link>
           </div>

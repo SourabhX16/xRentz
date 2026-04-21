@@ -1,0 +1,189 @@
+.trip-planner-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.trip-planner {
+  background: var(--color-white);
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-2xl);
+  display: flex;
+  flex-direction: column;
+  color: var(--color-neutral-900);
+}
+
+/* HEADER */
+.trip-planner__header {
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-800));
+  color: #fff;
+  padding: var(--space-8) var(--space-8) var(--space-12);
+  position: relative;
+}
+
+.trip-planner__close {
+  position: absolute;
+  top: var(--space-4);
+  right: var(--space-4);
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.trip-planner__close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.trip-planner__title {
+  font-size: var(--text-h3);
+  margin-bottom: var(--space-2);
+}
+
+.trip-planner__subtitle {
+  font-size: var(--text-body);
+  opacity: 0.9;
+}
+
+/* CONTENT */
+.trip-planner__body {
+  padding: var(--space-8);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.planner-section {
+  margin-bottom: var(--space-10);
+  position: relative;
+  padding-left: var(--space-10);
+  border-left: 2px dashed var(--color-neutral-200);
+}
+
+.planner-section::before {
+  content: attr(data-step);
+  position: absolute;
+  left: -17px;
+  top: 0;
+  width: 32px;
+  height: 32px;
+  background: var(--color-white);
+  border: 2px solid var(--color-primary-500);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--fw-bold);
+  color: var(--color-primary-600);
+  font-size: 0.8rem;
+  z-index: 2;
+}
+
+.planner-section:last-child {
+  border-left-color: transparent;
+}
+
+.planner-section__title {
+  font-size: var(--text-body);
+  font-weight: var(--fw-bold);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-neutral-900);
+}
+
+.planner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.planner-card {
+  padding: var(--space-4);
+  background: var(--color-neutral-50);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-neutral-100);
+}
+
+.planner-card__label {
+  font-size: var(--text-caption);
+  color: var(--color-neutral-500);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.planner-card__value {
+  font-size: var(--text-body-sm);
+  font-weight: var(--fw-semi);
+}
+
+.planner-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.planner-list-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-body-sm);
+  color: var(--color-neutral-700);
+}
+
+.planner-list-item::before {
+  content: "•";
+  color: var(--color-primary-500);
+  font-weight: bold;
+}
+
+/* FOOTER */
+.trip-planner__footer {
+  padding: var(--space-6) var(--space-8);
+  background: var(--color-neutral-50);
+  border-top: 1px solid var(--color-neutral-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.planner-download {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-primary-600);
+  font-weight: var(--fw-semi);
+  text-decoration: none;
+  font-size: var(--text-body-sm);
+}
+
+.planner-download:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .planner-grid { grid-template-columns: 1fr; }
+  .trip-planner { height: 100vh; max-height: 100vh; border-radius: 0; }
+}

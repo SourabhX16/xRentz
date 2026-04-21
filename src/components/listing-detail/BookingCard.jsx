@@ -1,3 +1,5 @@
+import { useApp } from '../../context/AppContext';
+
 export default function BookingCard({ 
   listing, 
   checkIn, 
@@ -7,17 +9,18 @@ export default function BookingCard({
   guests, 
   setGuests, 
   onReserve,
-  nights,
-  serviceFee,
-  total
+  pricing
 }) {
+  const { formatPrice, t } = useApp();
+  const isInstant = listing.instantBook !== false; // Default to true if not specified
+
   return (
     <aside className="detail-sidebar" id="booking-sidebar">
       <div className="booking-card">
         <header className="booking-card__header">
           <div className="booking-card__price">
-            <span className="booking-card__amount">${listing.price}</span>
-            <span className="booking-card__unit">/ night</span>
+            <span className="booking-card__amount">{formatPrice(listing.price)}</span>
+            <span className="booking-card__unit">/ {t('common.night')}</span>
           </div>
           <div className="booking-card__rating">
             <StarIcon />
@@ -63,8 +66,8 @@ export default function BookingCard({
               ))}
             </select>
           </div>
-          <button type="submit" className="btn btn--accent btn--lg booking-card__cta">
-            Reserve Now
+          <button type="submit" className={`btn ${isInstant ? 'btn--accent' : 'btn--primary'} btn--lg booking-card__cta`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <span>{isInstant ? '⚡ ' + t('booking.instant') : t('booking.request')}</span>
           </button>
         </form>
         
@@ -72,16 +75,32 @@ export default function BookingCard({
 
         <footer className="booking-card__breakdown">
           <div className="booking-card__line">
-            <span>${listing.price} × {nights} night{nights > 1 ? 's' : ''}</span>
-            <span>${listing.price * nights}</span>
+            <span>Base rate ({formatPrice(listing.price)} × {pricing.nights} {t('common.night')}s)</span>
+            <span>{formatPrice(pricing.baseTotal)}</span>
           </div>
+          {pricing.weekendSur > 0 && (
+            <div className="booking-card__line" style={{ color: 'var(--color-primary-600)' }}>
+              <span>Weekend Peak Pricing (+15%)</span>
+              <span>{formatPrice(pricing.weekendSur)}</span>
+            </div>
+          )}
+          {pricing.seasonSur > 0 && (
+            <div className="booking-card__line" style={{ color: 'var(--color-error-500)' }}>
+              <span>Summer Season (+20%)</span>
+              <span>{formatPrice(pricing.seasonSur)}</span>
+            </div>
+          )}
           <div className="booking-card__line">
             <span>Service fee (12%)</span>
-            <span>${serviceFee}</span>
+            <span>{formatPrice(pricing.serviceFee)}</span>
+          </div>
+          <div className="booking-card__line" style={{ color: 'var(--color-neutral-500)', fontSize: '0.85em' }}>
+            <span>Refundable deposit</span>
+            <span>{formatPrice(250)}</span>
           </div>
           <div className="booking-card__line booking-card__line--total">
             <span>Total</span>
-            <span>${total}</span>
+            <span>{formatPrice(pricing.total)}</span>
           </div>
         </footer>
       </div>

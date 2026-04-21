@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { listings as staticListings } from '../data/listings';
 
@@ -8,7 +9,17 @@ import { listings as staticListings } from '../data/listings';
  */
 export function useDashboard() {
   const { user, bookings, favorites, logout, addToast, ownerListings } = useApp();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('bookings');
+
+  // Parse URL to jump straight to a tab (like profile)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [location.search]);
 
   const allListings = useMemo(() => 
     [...staticListings, ...ownerListings], 

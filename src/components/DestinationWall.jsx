@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { listings } from '../data/listings';
 import { Link } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 import './DestinationWall.css';
 
 const TOP_LOCATIONS = [
@@ -14,6 +15,7 @@ const TOP_LOCATIONS = [
 ];
 
 export default function DestinationWall() {
+  const { formatPrice, t } = useApp();
   const [activeIndex, setActiveIndex] = useState(0);
 
   const activeProperty = listings.find(l => l.id === TOP_LOCATIONS[activeIndex].propertyId);
@@ -32,6 +34,7 @@ export default function DestinationWall() {
               <button
                 key={loc.id}
                 className={`dest-nav__item ${activeIndex === idx ? 'active' : ''}`}
+                onClick={() => setActiveIndex(idx)}
                 onMouseEnter={() => setActiveIndex(idx)}
               >
                 <span className="dest-nav__number">0{idx + 1}</span>
@@ -61,12 +64,12 @@ export default function DestinationWall() {
                     <span className="dest-preview__category">{activeProperty.category}</span>
                     <h3 className="dest-preview__title">{activeProperty.title}</h3>
                     <div className="dest-preview__meta">
-                      <span className="price">${activeProperty.price} / night</span>
+                      <span className="price">{formatPrice(activeProperty.price)} / {t('common.night')}</span>
                       <span className="rating">⭐ {activeProperty.rating}</span>
                     </div>
                   </div>
                   <Link to={`/listing/${activeProperty.id}`} className="dest-preview__btn">
-                    View Details
+                    {t('common.view_details') || 'View Details'}
                   </Link>
                 </div>
               </div>

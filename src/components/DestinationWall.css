@@ -142,7 +142,7 @@
   margin-top: var(--space-2);
   display: flex;
   gap: var(--space-4);
-  color: rgba(255, a255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.9rem;
 }
 

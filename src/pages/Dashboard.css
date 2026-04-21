@@ -236,6 +236,29 @@
   color: var(--color-error-700);
 }
 
+.booking-item__planner-btn {
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-500));
+  color: #fff;
+  border: none;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-spring);
+  box-shadow: 0 4px 10px rgba(var(--color-primary-rgb), 0.3);
+}
+
+.booking-item__planner-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(var(--color-primary-rgb), 0.4);
+  filter: brightness(1.1);
+}
+
+.booking-item__planner-btn:active {
+  transform: translateY(0);
+}
+
 /* FAVORITES */
 .dashboard-favorites__grid {
   display: grid;

@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { listings } from '../data/listings';
 import { Link } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 import './VibeCarousel.css';
 
 const VIBES = [
@@ -12,6 +13,7 @@ const VIBES = [
 ];
 
 export default function VibeCarousel() {
+  const { formatPrice, t } = useApp();
   const [activeVibe, setActiveVibe] = useState('all');
   const scrollRef = useRef(null);
 
@@ -28,8 +30,8 @@ export default function VibeCarousel() {
       <div className="container">
         <div className="vibe-header">
           <div className="vibe-titles">
-            <span className="vibe-badge">Experience xRentz</span>
-            <h2 className="vibe-title">Explore by Vibe</h2>
+            <span className="vibe-badge">{t('vibe.badge') || 'Experience xRentz'}</span>
+            <h2 className="vibe-title">{t('vibe.title') || 'Explore by Vibe'}</h2>
           </div>
           
           <div className="vibe-filters">
@@ -69,7 +71,7 @@ export default function VibeCarousel() {
                   <div className="vibe-card__image-wrap">
                     <img src={item.images[0]} alt={item.title} className="vibe-card__image" />
                     <div className="vibe-card__price">
-                      <span>${item.price}</span>/night
+                      <span>{formatPrice(item.price)}</span>/{t('common.night')}
                     </div>
                   </div>
                   <div className="vibe-card__info">

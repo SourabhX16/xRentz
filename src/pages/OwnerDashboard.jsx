@@ -40,7 +40,7 @@ function LocationPicker({ lat, lng, onChange }) {
 }
 
 export default function OwnerDashboard() {
-  const { user, ownerListings, addOwnerListing, removeOwnerListing, logout, addToast, bookings, addBooking: addOwnerBooking } = useApp();
+  const { user, ownerListings, addOwnerListing, removeOwnerListing, logout, addToast, bookings, addBooking: addOwnerBooking, userReviews, addReviewReply } = useApp();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('properties');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -144,6 +144,7 @@ export default function OwnerDashboard() {
     { id: 'properties', label: '🏠 My Properties', count: ownerListings.length },
     { id: 'availability', label: '📅 Availability', count: null },
     { id: 'bookings', label: '📋 Bookings Received', count: ownerListings.length > 0 ? 2 : 0 },
+    { id: 'reviews', label: '⭐ Guest Reviews', count: userReviews?.filter(r => ownerListings.some(ol => ol.id === r.listingId)).length || 0 },
     { id: 'earnings', label: '💰 Earnings', count: null },
     { id: 'profile', label: '👤 Profile', count: null },
   ];
@@ -390,6 +391,25 @@ export default function OwnerDashboard() {
                       )}
                     </div>
 
+                    {/* Trust & Safety: Property Verification */}
+                    <div className="form-group owner-form__full" style={{ padding: '20px', border: '1px solid var(--color-primary-200)', background: 'var(--color-primary-50)', borderRadius: 'var(--radius-lg)' }}>
+                      <h4 style={{ margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary-900)' }}>
+                        🔐 Trust & Safety: Property Verification
+                      </h4>
+                      <p style={{ fontSize: '13px', margin: '0 0 16px 0', color: 'var(--color-primary-700)' }}>
+                        Upload legal documentation proving ownership (e.g., deed, property tax bill) to earn the "Verified Host" badge. Verification establishes trust giving you more bookings.
+                      </p>
+                      
+                      <div className="owner-form__upload-zone" style={{ borderStyle: 'dashed', height: '100px' }}>
+                        <input type="file" id="prop-docs" accept=".pdf,image/*" className="owner-form__file-input" />
+                        <label htmlFor="prop-docs" className="owner-form__upload-label">
+                          <span className="upload-icon">📄</span>
+                          <span>Upload Legal Document</span>
+                          <small>Must be PDF or Image</small>
+                        </label>
+                      </div>
+                    </div>
+
                     {/* Description */}
                     <div className="form-group owner-form__full">
                       <label className="form-label" htmlFor="prop-desc">Description *</label>
@@ -589,6 +609,80 @@ export default function OwnerDashboard() {
                 </button>
               </div>
             )}
+          </div>
+        )}
+
+        {/* ── REVIEWS TAB ── */}
+        {activeTab === 'reviews' && (
+          <div className="owner-reviews animate-fade-in">
+            {(() => {
+              const myReviews = userReviews?.filter(r => ownerListings.some(ol => ol.id === r.listingId)) || [];
+              if (myReviews.length === 0) {
+                return (
+                  <div className="dashboard-empty-tab">
+                    <div className="dashboard-empty-tab__icon">⭐</div>
+                    <h3>No reviews yet</h3>
+                    <p>When guests review your properties, they'll show up here.</p>
+                  </div>
+                );
+              }
+              return (
+                <div className="owner-reviews__list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {myReviews.map(r => {
+                    const listingTitle = ownerListings.find(ol => ol.id === r.listingId)?.title || 'Your Property';
+                    return (
+                      <div key={r.id} className="owner-prop-card" style={{ padding: '20px', flexDirection: 'column', alignItems: 'flex-start' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginBottom: '16px' }}>
+                          <div>
+                            <h3 style={{ fontSize: '1.1rem', margin: '0 0 4px 0' }}>{listingTitle}</h3>
+                            <div style={{ fontSize: '13px', color: 'var(--color-neutral-500)', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                              <span>{r.user?.avatar} {r.user?.name}</span>
+                              <span>·</span>
+                              <span>{r.date}</span>
+                              <span>·</span>
+                              <strong style={{ color: 'var(--color-primary-600)' }}>⭐ {r.rating}</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="review-categories-micro" style={{ marginBottom: '12px' }}>
+                          {r.categories && Object.entries(r.categories).map(([k, v]) => (
+                            <span key={k}>{k.charAt(0).toUpperCase() + k.slice(1)}: {v}/5</span>
+                          ))}
+                        </div>
+
+                        <p style={{ fontSize: '14px', lineHeight: '1.6', marginBottom: '16px' }}>"{r.text}"</p>
+
+                        {r.photo && (
+                          <div style={{ marginBottom: '16px' }}>
+                            <img src={r.photo} alt="Guest uploaded" style={{ maxHeight: '120px', borderRadius: '8px' }} />
+                          </div>
+                        )}
+
+                        {r.replies && r.replies.map((reply, i) => (
+                          <div key={i} style={{ padding: '12px', background: 'var(--color-neutral-50)', borderLeft: '3px solid var(--color-primary-500)', marginTop: '8px', width: '100%' }}>
+                            <strong style={{ fontSize: '12px', color: 'var(--color-primary-600)' }}>Your Reply · {reply.date}</strong>
+                            <p style={{ fontSize: '13px', margin: '4px 0 0 0' }}>{reply.text}</p>
+                          </div>
+                        ))}
+
+                        <form 
+                          style={{ display: 'flex', gap: '8px', width: '100%', marginTop: '16px' }}
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            addReviewReply(r.id, e.target.reply.value);
+                            e.target.reply.value = '';
+                          }}
+                        >
+                          <input type="text" name="reply" className="form-input" placeholder="Write a response..." style={{ flex: 1 }} required />
+                          <button type="submit" className="btn btn--secondary btn--sm">Reply</button>
+                        </form>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
 

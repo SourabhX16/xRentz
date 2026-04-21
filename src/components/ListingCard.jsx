@@ -4,7 +4,7 @@ import { useApp } from '../context/AppContext';
 import './ListingCard.css';
 
 export default function ListingCard({ listing, index = 0 }) {
-  const { favorites, toggleFavorite } = useApp();
+  const { favorites, toggleFavorite, formatPrice, t } = useApp();
   const [imgIndex, setImgIndex] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
   const isFav = favorites.includes(listing.id);
@@ -76,14 +76,12 @@ export default function ListingCard({ listing, index = 0 }) {
         </button>
 
         {/* Superhost badge */}
-        {listing.superhost && (
           <div className="listing-card__badge">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
             </svg>
-            Superhost
+            {listing.superhost ? 'Superhost' : ''}
           </div>
-        )}
       </div>
 
       <div className="listing-card__body">
@@ -100,8 +98,8 @@ export default function ListingCard({ listing, index = 0 }) {
         <p className="listing-card__meta">{listing.guests} guests · {listing.bedrooms} bed · {listing.bathrooms} bath</p>
         <div className="listing-card__footer">
           <p className="listing-card__price">
-            <span className="listing-card__price-amount">${listing.price}</span>
-            <span className="listing-card__price-unit"> / night</span>
+            <span className="listing-card__price-amount">{formatPrice(listing.price)}</span>
+            <span className="listing-card__price-unit"> / {t('common.night')}</span>
           </p>
         </div>
       </div>

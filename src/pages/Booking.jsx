@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { listings as staticListings } from '../data/listings';
 import { useApp } from '../context/AppContext';
 import AtmosphereEffect from '../components/AtmosphereEffect';
@@ -9,8 +9,14 @@ export default function Booking() {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { user, addBooking, addToast, ownerListings, hasMembership } = useApp();
-  const [discountApplied, setDiscountApplied] = useState(false);
+  const location = useLocation();
+  const { user, addBooking, addToast, ownerListings, hasMembership, getMemberDiscount, membershipData, formatPrice, t, region } = useApp();
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [hasInsurance, setHasInsurance] = useState(false);
+  const DAMAGE_DEPOSIT = 250;
+  
+  const TIERS_MAP = { silver: '🥈', gold: '🥇', platinum: '💎' };
+
   const allListings = [...staticListings, ...ownerListings];
   const listing = allListings.find(l => l.id === parseInt(id)) || allListings.find(l => l.id === Number(id));
 
@@ -46,6 +52,9 @@ export default function Booking() {
     specialRequests: '',
     // Payment specific
     paymentMethod: 'card',
+    cardNumber: '',
+    expiry: '',
+    cvc: '',
     accountNumber: '',
     routingNumber: '',
     digitalId: '',
@@ -65,11 +74,43 @@ export default function Booking() {
     );
   }
 
-  const nights = checkIn && checkOut ? Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / 86400000)) : 1;
-  const subtotal = listing.price * nights;
-  const serviceFee = Math.round(subtotal * 0.12);
-  const discountAmount = discountApplied ? Math.round((subtotal + serviceFee) * 0.10) : 0;
-  const total = subtotal + serviceFee - discountAmount;
+  const calculatePricing = () => {
+    if (!checkIn || !checkOut || !listing) return { subtotal: 0, serviceFee: 0, total: 0, nights: 0, baseTotal: 0, weekendSur: 0, seasonSur: 0, cleaningFee: 0 };
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    const diff = Math.ceil((end - start) / 86400000);
+    const nights = Math.max(1, diff);
+
+    let baseTotal = 0;
+    let weekendSur = 0;
+    let seasonSur = 0;
+
+    for (let i = 0; i < nights; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      const day = d.getDay();
+      const month = d.getMonth();
+      baseTotal += listing.price;
+      if (day === 0 || day === 5 || day === 6) weekendSur += (listing.price * 0.15);
+      if (month >= 5 && month <= 7) seasonSur += (listing.price * 0.20);
+    }
+    const subtotal = Math.round(baseTotal + weekendSur + seasonSur);
+    const serviceFee = Math.round(subtotal * 0.12);
+    return { subtotal, serviceFee, nights, baseTotal, weekendSur, seasonSur, cleaningFee: 50, hasWeekendSurcharge: weekendSur > 0, hasSeasonalSurcharge: seasonSur > 0 };
+  };
+
+  const pricing = calculatePricing();
+  const subtotal = pricing.subtotal;
+  const serviceFee = pricing.serviceFee;
+  
+  const memberDiscount = getMemberDiscount(subtotal + serviceFee);
+  const discountData = promoApplied ? memberDiscount : { discount: 0, tierName: '', percent: 0 };
+  
+  // New pricing components
+  const insuranceCost = hasInsurance ? 15 : 0;
+  const total = subtotal + serviceFee + insuranceCost + DAMAGE_DEPOSIT - discountData.discount;
+  
+  const isInstant = listing?.instantBook !== false;
 
   const updateField = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -116,6 +157,7 @@ export default function Booking() {
       guests,
       total,
       guestName: `${formData.firstName} ${formData.lastName}`,
+      instantBook: listing.instantBook
     });
     if (success) setStep(4);
   };
@@ -129,7 +171,7 @@ export default function Booking() {
 
       {/* PROGRESS */}
       <div className="booking-progress" role="progressbar" aria-valuenow={step} aria-valuemin="1" aria-valuemax="4">
-        {['Guest Details', 'Payment', 'Review', 'Confirmed'].map((label, i) => (
+        {['Guest Details', 'Payment', 'Review', isInstant ? 'Confirmed' : 'Requested'].map((label, i) => (
           <div key={label} className={`booking-progress__step ${step > i ? 'booking-progress__step--done' : ''} ${step === i + 1 ? 'booking-progress__step--active' : ''}`}>
             <div className="booking-progress__dot">
               {step > i + 1 ? '✓' : i + 1}
@@ -185,19 +227,38 @@ export default function Booking() {
             <div className="booking-step animate-fade-in" id="step-payment">
               <h2 className="booking-step__title">Payment</h2>
               <p className="booking-step__desc">Enter your payment details securely</p>
+              
+              <div className="trust-safety-opt-in" style={{ background: 'var(--color-primary-50)', padding: '16px', borderRadius: '12px', marginBottom: '24px', display: 'flex', alignItems: 'flex-start', gap: '12px', border: '1px solid var(--color-primary-200)' }}>
+                <input 
+                  type="checkbox" 
+                  id="insurance-opt" 
+                  checked={hasInsurance} 
+                  onChange={(e) => setHasInsurance(e.target.checked)} 
+                  style={{ marginTop: '4px', transform: 'scale(1.2)', accentColor: 'var(--color-primary-600)' }} 
+                />
+                <div>
+                  <label htmlFor="insurance-opt" style={{ fontWeight: 'bold', display: 'block', color: 'var(--color-primary-900)' }}>
+                    Add xRentz Stay Insurance (+$15)
+                  </label>
+                  <p style={{ fontSize: '13px', margin: '4px 0 0', color: 'var(--color-primary-700)' }}>
+                    Comprehensive protection including unexpected cancellations, medical emergencies, and trip interruptions.
+                  </p>
+                </div>
+              </div>
+
               <div className="payment-methods">
                 <button 
                   className={`payment-method ${formData.paymentMethod === 'card' ? 'payment-method--active' : ''}`}
                   onClick={() => updateField('paymentMethod', 'card')}
-                >💳 Credit Card</button>
+                >💳 {region === 'IN' ? 'Debit/Credit Card' : 'Stripe Card'}</button>
                 <button 
                   className={`payment-method ${formData.paymentMethod === 'bank' ? 'payment-method--active' : ''}`}
                   onClick={() => updateField('paymentMethod', 'bank')}
-                >🏦 Bank Transfer</button>
+                >🏦 {region === 'IN' ? 'Net Banking' : 'Bank Transfer'}</button>
                 <button 
                   className={`payment-method ${formData.paymentMethod === 'digital' ? 'payment-method--active' : ''}`}
                   onClick={() => updateField('paymentMethod', 'digital')}
-                >📱 Digital Wallet</button>
+                >📱 {region === 'IN' ? 'Razorpay' : 'Apple/Google Pay'}</button>
               </div>
               
               <div className="booking-form-grid booking-form-grid--payment">
@@ -270,7 +331,7 @@ export default function Booking() {
                   <h3>Stay Details</h3>
                   <p>Check-in: {checkIn || 'Flexible'}</p>
                   <p>Check-out: {checkOut || 'Flexible'}</p>
-                  <p>{guests} Guest{guests > 1 ? 's' : ''} · {nights} Night{nights > 1 ? 's' : ''}</p>
+                  <p>{guests} Guest{guests > 1 ? 's' : ''} · {pricing.nights} Night{pricing.nights > 1 ? 's' : ''}</p>
                 </div>
                 <div className="review-summary__section">
                   <h3>Payment</h3>
@@ -279,23 +340,28 @@ export default function Booking() {
                     {formData.paymentMethod === 'bank' && `Bank Transfer (Acc: ${formData.accountNumber.slice(-4) || '****'})`}
                     {formData.paymentMethod === 'digital' && `Digital Wallet: ${formData.digitalId}`}
                   </p>
-                  <p className="review-summary__total">Total: <strong>${total}</strong></p>
+                  <p className="review-summary__total">Total: <strong>{formatPrice(total)}</strong></p>
                 </div>
               </div>
               <div className="booking-step__actions">
                 <button className="btn btn--ghost btn--md" onClick={() => setStep(2)}>← Back</button>
-                <button className="btn btn--accent btn--lg" onClick={handleConfirm} id="confirm-booking-btn">Confirm & Pay ${total}</button>
+                <button className="btn btn--accent btn--lg" onClick={handleConfirm} id="confirm-booking-btn">
+                  {isInstant ? `Confirm & Pay ${formatPrice(total)}` : `Request to Book ${formatPrice(total)}`}
+                </button>
               </div>
             </div>
           )}
 
           {step === 4 && (
             <div className="booking-step booking-confirmed animate-scale-in" id="step-confirmed">
-              <div className="booking-confirmed__icon">🎉</div>
-              <h2 className="booking-confirmed__title">Booking Confirmed!</h2>
+              <div className="booking-confirmed__icon">{isInstant ? '🎉' : '⏳'}</div>
+              <h2 className="booking-confirmed__title">{isInstant ? 'Booking Confirmed!' : 'Booking Requested!'}</h2>
               <p className="booking-confirmed__text">
-                You're all set! Your reservation at <strong>{listing.title}</strong> has been confirmed.
-                A confirmation email has been sent to <strong>{formData.email}</strong>.
+                {isInstant ? (
+                  <>You're all set! Your reservation at <strong>{listing.title}</strong> has been confirmed. A confirmation email has been sent to <strong>{formData.email}</strong>.</>
+                ) : (
+                  <>Your request to book <strong>{listing.title}</strong> has been sent to the host. You won't be charged until they approve. You will notified at <strong>{formData.email}</strong>.</>
+                )}
               </p>
               <div className="booking-confirmed__details">
                 <div className="booking-confirmed__detail">
@@ -312,7 +378,7 @@ export default function Booking() {
                 </div>
                 <div className="booking-confirmed__detail">
                   <span>Total Paid</span>
-                  <strong>${total}</strong>
+                  <strong>{formatPrice(total)}</strong>
                 </div>
               </div>
               <div className="booking-step__actions" style={{ justifyContent: 'center' }}>
@@ -340,36 +406,59 @@ export default function Booking() {
               </div>
               <div className="booking-summary__divider" />
               <div className="booking-summary__breakdown">
-                <div className="booking-summary__line">
-                  <span>${listing.price} × {nights} night{nights > 1 ? 's' : ''}</span>
-                  <span>${subtotal}</span>
+                <div className="booking-summary__price-row">
+                  <div className="booking-summary__price-label">
+                    <span>{formatPrice(listing.price)} × {pricing.nights} {t('common.night')}s</span>
+                    {pricing.hasWeekendSurcharge && <small className="pricing-tag pricing-tag--weekend">+15% Weekend Peak</small>}
+                    {pricing.hasSeasonalSurcharge && <small className="pricing-tag pricing-tag--seasonal">+20% Summer Spike</small>}
+                  </div>
+                  <span>{formatPrice(pricing.baseTotal)}</span>
                 </div>
-                <div className="booking-summary__line">
-                  <span>Service fee</span>
-                  <span>${serviceFee}</span>
+                
+                <div className="booking-summary__price-row">
+                  <span>Cleaning Fee</span>
+                  <span>{formatPrice(pricing.cleaningFee)}</span>
                 </div>
-                {hasMembership && (
-                  <div className={`booking-summary__vip-box ${discountApplied ? 'active' : ''}`} onClick={() => setDiscountApplied(!discountApplied)}>
+                <div className="booking-summary__price-row">
+                  <span>Service Fee (12%)</span>
+                  <span>{formatPrice(pricing.serviceFee)}</span>
+                </div>
+                <div className="booking-summary__price-row">
+                  <span>Damage Deposit (Refundable)</span>
+                  <span>{formatPrice(250)}</span>
+                </div>
+                {hasInsurance && (
+                  <div className="booking-summary__price-row booking-summary__price-row--insurance">
+                    <span>Stay Insurance (Shield Plus)</span>
+                    <span>{formatPrice(15)}</span>
+                  </div>
+                )}
+                
+                {hasMembership && membershipData && (
+                  <div className={`booking-summary__vip-box ${promoApplied ? 'active' : ''}`} onClick={() => setPromoApplied(!promoApplied)}>
                     <div className="vip-box-header">
-                      <span>💎 VIP Membership</span>
-                      <div className={`vip-toggle ${discountApplied ? 'on' : ''}`}></div>
+                      <span>{TIERS_MAP[membershipData.tier] || '💎'} {membershipData.tierName} Card</span>
+                      <div className={`vip-toggle ${promoApplied ? 'on' : ''}`}></div>
                     </div>
-                    {discountApplied ? (
-                      <p className="vip-discount-notice">-10% Discount Applied! ✨</p>
+                    {promoApplied ? (
+                      <p className="vip-discount-notice">-{membershipData.discount}% Discount Applied! ✨</p>
                     ) : (
                       <p className="vip-discount-notice">Tap to apply VIP discount</p>
                     )}
                   </div>
                 )}
-                {discountApplied && (
-                  <div className="booking-summary__line discount-line">
-                    <span>VIP Discount (10%)</span>
-                    <span>-${discountAmount}</span>
+                
+                {discountData.discount > 0 && (
+                  <div className="booking-summary__price-row booking-summary__price-row--discount">
+                    <span>{discountData.tierName} Member Discount ({discountData.percent}%)</span>
+                    <span>-{formatPrice(discountData.discount)}</span>
                   </div>
                 )}
-                <div className="booking-summary__line booking-summary__line--total">
+
+                <hr className="booking-summary__divider" />
+                <div className="booking-summary__price-row booking-summary__price-row--total">
                   <span>Total</span>
-                  <span>${total}</span>
+                  <span>{formatPrice(total)}</span>
                 </div>
               </div>
             </div>

@@ -10,7 +10,13 @@ export default function SearchBar({ variant = 'hero' }) {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    navigate('/listings');
+    const params = new URLSearchParams();
+    if (searchFilters.location) params.set('location', searchFilters.location);
+    if (searchFilters.checkIn) params.set('checkIn', searchFilters.checkIn);
+    if (searchFilters.checkOut) params.set('checkOut', searchFilters.checkOut);
+    if (searchFilters.guests > 1) params.set('guests', searchFilters.guests);
+    
+    navigate(`/listings?${params.toString()}`);
   };
 
   return (

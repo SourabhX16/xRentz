@@ -8,7 +8,7 @@ import { listings as staticListings, reviews as allReviews } from '../data/listi
  */
 export function useListing() {
   const { id } = useParams();
-  const { user, favorites, toggleFavorite, addToast, ownerListings } = useApp();
+  const { user, favorites, toggleFavorite, addToast, ownerListings, userReviews, t, formatPrice, currency, setCurrency } = useApp();
   const [activeImg, setActiveImg] = useState(0);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
@@ -19,24 +19,68 @@ export function useListing() {
     return allListings.find(l => l.id === parseInt(id)) || allListings.find(l => l.id === Number(id));
   }, [id, ownerListings]);
 
-  const listingReviews = useMemo(() => 
-    allReviews.filter(r => r.listingId === listing?.id),
-  [listing]);
+  const listingReviews = useMemo(() => {
+    // Combine static reviews with user-generated reviews for this listing
+    const staticRev = allReviews.filter(r => r.listingId === listing?.id);
+    const userRev = userReviews.filter(r => r.listingId === listing?.id);
+    return [...staticRev, ...userRev];
+  }, [listing, userReviews]);
 
   const isFav = favorites.includes(listing?.id);
 
   // Price calculations
-  const getNights = () => {
-    if (!checkIn || !checkOut) return 1;
+  const calculatePricing = () => {
+    if (!listing) return { nights: 1, baseTotal: 0, weekendSur: 0, seasonSur: 0, subtotal: 0, serviceFee: 0, total: 0 };
+    if (!checkIn || !checkOut) {
+      const sub = listing.price;
+      const fee = Math.round(sub * 0.12);
+      return { nights: 1, baseTotal: sub, weekendSur: 0, seasonSur: 0, subtotal: sub, serviceFee: fee, total: sub + fee };
+    }
+
     const start = new Date(checkIn);
     const end = new Date(checkOut);
     const diff = Math.ceil((end - start) / 86400000);
-    return Math.max(1, diff);
+    const nights = Math.max(1, diff);
+
+    let baseTotal = 0;
+    let weekendSur = 0;
+    let seasonSur = 0;
+
+    for (let i = 0; i < nights; i++) {
+      const d = new Date(start);
+      d.setDate(d.getDate() + i);
+      const day = d.getDay(); // 0 = Sun, 5 = Fri, 6 = Sat
+      const month = d.getMonth(); // 5 = Jun, 6 = Jul, 7 = Aug
+
+      let nightlyRate = listing.price;
+      baseTotal += nightlyRate;
+
+      // Weekend pricing (+15%)
+      if (day === 0 || day === 5 || day === 6) {
+        weekendSur += (nightlyRate * 0.15);
+      }
+
+      // Seasonal pricing (Summer Jun-Aug) (+20%)
+      if (month >= 5 && month <= 7) {
+        seasonSur += (nightlyRate * 0.20);
+      }
+    }
+
+    const subtotal = Math.round(baseTotal + weekendSur + seasonSur);
+    const serviceFee = Math.round(subtotal * 0.12);
+    
+    return {
+      nights,
+      baseTotal: Math.round(baseTotal),
+      weekendSur: Math.round(weekendSur),
+      seasonSur: Math.round(seasonSur),
+      subtotal,
+      serviceFee,
+      total: subtotal + serviceFee
+    };
   };
 
-  const nights = getNights();
-  const serviceFee = listing ? Math.round(listing.price * nights * 0.12) : 0;
-  const total = listing ? (listing.price * nights + serviceFee) : 0;
+  const pricing = useMemo(() => calculatePricing(), [listing, checkIn, checkOut]);
 
   return {
     listing,
@@ -51,10 +95,15 @@ export function useListing() {
     setGuests,
     isFav,
     toggleFavorite,
-    nights,
-    serviceFee,
-    total,
+    pricing,
+    nights: pricing.nights,
+    serviceFee: pricing.serviceFee,
+    total: pricing.total,
     user,
-    addToast
+    addToast,
+    t,
+    formatPrice,
+    currency,
+    setCurrency
   };
 }
