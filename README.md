@@ -6,77 +6,103 @@
 
 > **Elevate your travel experience with the world's most immersive rental platform.**
 
-xRentz is a premium, high-performance rental marketplace designed for modern travelers and hosts. Built with speed, localízation, and a "vibe-first" discovery engine, it redefines how we find our next stay.
+xRentz is a premium, high-performance rental marketplace designed for modern travelers and hosts. Built with speed, localization, and a "vibe-first" discovery engine, it redefines how we find our next stay.
+
+---
+
+## 🗺️ Application Workflow
+
+Understanding the seamless flow of xRentz from discovery to stay.
+
+### 1. User Journey Flow
+```mermaid
+graph TD
+    A[Home Page] -->|Search/Explore| B[Listings Grid]
+    B -->|Click Property| C[Listing Details]
+    C -->|Choose Dates| D[Unified Auth]
+    D -->|Logged In| E[Booking Request]
+    E -->|Confirmed| F[Trip Dashboard]
+    F -->|Click Info| G[Visit Planner]
+    G -->|Stay Ready| H[Check-in instructions, WiFi, Food Tips]
+```
+
+### 2. AI Intelligence (xRentz Guru)
+```mermaid
+graph LR
+    User[User Input] --> AI[Guru AI]
+    AI -->|Analyzes| Context[User Vibe & Language]
+    Context -->|Retrieves| Listings[Personalized Listing Matches]
+    Listings --> UI[Conversational UI Response]
+```
 
 ---
 
 ## ✨ Key Features
 
-- **🌍 Global Localization**: Real-time support for 5+ languages (EN, HI, FR, ES, DE) and multi-currency formatting.
-- **🗺️ Interactive Discovery**: A dynamic "Destination Wall" and Vibe-based filtering system.
-- **🤖 xRentz Guru AI**: An intelligent travel assistant that helps you find the perfect stay based on your mood and energy.
-- **📈 Personal Visit Planner**: Auto-generated itineraries for every booking, including check-in codes, local food vibes, and check-out guides.
-- **🎨 Elite Aesthetics**: Fully responsive, glassmorphic UI with smooth Framer Motion transitions.
+### 🌍 Global Localization & Currency
+xRentz is built for the global citizen. Our internal `t()` translation engine and `formatPrice()` utility ensure that every user sees the interface in their native language and preferred currency (USD, INR, EUR, GBP) without a single page reload.
+
+### 🤖 xRentz Guru AI Assistant
+Integrated directly with the **Google Gemini Pro** engine, our AI Guru doesn't just answer questions; it understands "Vibes." Tell it you want a "cozy cabin with a chill energy" and it will scan listing metadata to find your literal soulmate-stay.
+
+### 🚀 Smart Visit Planner
+Found in the **User Dashboard**, this feature auto-generates a comprehensive digital itinerary for every confirmed trip:
+- **Documents**: Required ID and verification status.
+- **Access**: High-security codes and WiFi keys.
+- **Local Tastes**: Curated food & beverage picks based on the listing's GPS location.
 
 ---
 
-## 🚀 Tech Stack
+## 🛠️ Architecture & Tech Stack
 
-- **Frontend**: [React 18](https://reactjs.org/) + [Vite](https://vitejs.dev/)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Styling**: Vanilla CSS (Custom Design System)
-- **AI Engine**: Google Gemini API
-- **State Management**: React Context API
+### Frontend Core
+- **React 18**: Component-based architecture for high scalability.
+- **Vite**: Ultra-fast build tool for an optimized developer experience.
+- **Context API**: Managing global state for Auth, Language, and Currency.
+
+### Experience Layer
+- **Framer Motion**: Powering all spatial transitions and micro-interactions.
+- **Vanilla CSS3**: Utilizing a robust CSS Variable system for theming and consistency.
+- **Google Fonts**: Inter & Plus Jakarta Sans for premium typography.
 
 ---
 
-## 🛠️ Installation & Setup
+## 📂 Project Navigation
 
-1. **Clone the repository**
+```bash
+src/
+├── components/   # UI blocks (Navbar, VibeCarousel, AI Agent)
+├── context/      # AppContext (Language, Currency, User State)
+├── data/         # Listing Database & Vibe Profiles
+├── hooks/        # Voice Search & Form Handlers
+├── pages/        # Core Views (Home, Auth, Dashboard, Support)
+├── services/     # Gemini AI & Weather integrations
+└── translations/ # Multi-language Dictionary
+```
+
+---
+
+## 🚀 Getting Started
+
+1. **Clone & Enter**
    ```bash
    git clone https://github.com/SourabhX16/xRentz.git
    cd xRentz
    ```
 
-2. **Install dependencies**
+2. **Install & Launch**
    ```bash
    npm install
-   ```
-
-3. **Configure Environment**
-   Create a `.env` file in the root directory and add your API keys:
-   ```env
-   VITE_GEMINI_API_KEY=your_api_key_here
-   ```
-
-4. **Start Development Server**
-   ```bash
    npm run dev
    ```
 
 ---
 
-## 📂 Project Structure
-
-```bash
-src/
-├── components/   # Atomic & Layout components
-├── context/      # Global state management
-├── data/         # Mock data & listings
-├── hooks/        # Custom React hooks
-├── pages/        # Main route pages
-├── services/     # API & Weather services
-└── translations/ # i18n Dictionary
-```
-
----
-
-## ⚖️ License
-
-Distributed under the MIT License. See `LICENSE` for more information.
+## ⚖️ License & Ethical Hosting
+Distributed under the MIT License. We promote **Responsible Hosting** through our support guides and community forums.
 
 ---
 
 <p align="center">
-  MADE BY <b>SOURABH</b> • XRENTZ TEAM 🏠
+  DESIGNED FOR THE FUTURE OF TRAVEL • <b>XRENTZ</b> 🏠
 </p>
