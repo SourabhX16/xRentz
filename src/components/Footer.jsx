@@ -42,6 +42,7 @@ export default function Footer() {
             <a href="#" className="footer__link">Safety Info</a>
             <Link to="/cancellation" className="footer__link">Cancellation Policy</Link>
             <Link to="/contact" className="footer__link">Contact Us</Link>
+            <Link to="/comparison" className="footer__link" style={{ color: 'var(--color-primary-500)', fontWeight: '600' }}>📊 Market Comparison</Link>
           </div>
         </div>
 
