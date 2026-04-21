@@ -14,6 +14,7 @@ import OwnerDashboard from './pages/OwnerDashboard';
 import HelpCenter from './pages/HelpCenter';
 import ContactUs from './pages/ContactUs';
 import CancellationPolicy from './pages/CancellationPolicy';
+import Comparison from './pages/Comparison';
 import './App.css';
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/help" element={<HelpCenter />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/cancellation" element={<CancellationPolicy />} />
+          <Route path="/comparison" element={<Comparison />} />
         </Routes>
       </main>
       <Footer />
