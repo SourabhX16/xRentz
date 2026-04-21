@@ -70,8 +70,53 @@ export async function queryGeminiForVibeMatch(userMessage, listings, conversatio
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   
   if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+    return queryNoLoginAI(userMessage, listings, conversationHistory);
+  }
+
+/**
+ * Super-smart fallback using Pollinations AI (No Key / No Login required)
+ */
+async function queryNoLoginAI(userMessage, listings, conversationHistory) {
+  const systemPrompt = buildSystemPrompt(listings);
+  
+  // Format history for a simple chat prompt
+  const historyText = conversationHistory.map(m => `${m.type === 'user' ? 'User' : 'Guru'}: ${m.text}`).join('\n');
+  
+  const fullPrompt = `${systemPrompt}\n\nExisting Conversation:\n${historyText}\n\nUser Message: ${userMessage}`;
+  
+  try {
+    const response = await fetch(`https://text.pollinations.ai/${encodeURIComponent(fullPrompt)}?json=true`);
+    const data = await response.json();
+    
+    // Pollinations might return a direct string or JSON if requested
+    // We try to parse it to match our format
+    let result = data;
+    if (typeof data === 'string') {
+        try {
+            // Try to find JSON in the string
+            const jsonMatch = data.match(/\{[\s\S]*\}/);
+            if (jsonMatch) result = JSON.parse(jsonMatch[0]);
+        } catch (e) {
+            return getFallbackResponse(userMessage, listings);
+        }
+    }
+
+    return {
+      detectedLanguage: result.detectedLanguage || 'English',
+      response: result.response || "I'm here to help!",
+      matches: (result.matches || []).map(m => ({
+        ...m,
+        listing: listings.find(l => l.id === m.id)
+      })),
+      suggestedFollowUps: result.suggestedFollowUps || [],
+      isAI: true,
+    };
+  } catch (err) {
+    console.error('No-Login AI failed:', err);
     return getFallbackResponse(userMessage, listings);
   }
+}
+
 
   const systemPrompt = buildSystemPrompt(listings);
 
